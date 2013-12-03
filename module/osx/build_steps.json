@@ -1,0 +1,3 @@
+[
+	{ "do": { "add_osx_system_framework": "Quartz.framework" } }
+]
