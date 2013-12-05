@@ -1,7 +1,7 @@
 {
+    "changes": "* Fix iOS 7 bug where status bar would show on top of camera UI.", 
     "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.", 
-    "name": "file",
-    "platform_version": "v2.0.0", 
-    "version": "2.2",
-    "changes": "* Fix iOS 7 bug where status bar would show on top of camera UI."
+    "name": "file", 
+    "platform_version": "v2.1.0", 
+    "version": "2.2"
 }
