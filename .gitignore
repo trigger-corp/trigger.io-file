@@ -16,3 +16,5 @@ inspector/an-inspector/ForgeModule/.classpath
 inspector/an-inspector/ForgeModule/.project
 inspector/an-inspector/ForgeModule/AndroidManifest.xml
 inspector/an-inspector/ForgeModule/project.properties
+inspector/ios-inspector/ForgeModule/build
+inspector/ios-inspector/build
