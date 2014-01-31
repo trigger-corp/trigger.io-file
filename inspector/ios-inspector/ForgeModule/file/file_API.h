@@ -15,6 +15,7 @@
 + (void)getLocal:(ForgeTask*)task name:(NSString*)name;
 + (void)URL:(ForgeTask*)task;
 + (void)isFile:(ForgeTask*)task;
++ (void)info:(ForgeTask*)task;
 + (void)base64:(ForgeTask*)task;
 + (void)string:(ForgeTask*)task;
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)url;

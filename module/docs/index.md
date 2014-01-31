@@ -121,6 +121,13 @@ remove them, if the file is only going to be used temporarily then
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
+!method: forge.file.info(file, success, error)
+!param: file `file` the file object to get information for
+!param: success `function(object)` callback to be invoked when no errors occur
+!description: Returns information about the given file. Supported attributes: `size`, `date`
+!platforms: iOS, Android
+!param: error `function(content)` called with details of any error which may occur
+
 !method: forge.file.base64(file, success, error)
 !param: file `file` the file object to load data from
 !param: success `function(base64String)` callback to be invoked when no errors occur

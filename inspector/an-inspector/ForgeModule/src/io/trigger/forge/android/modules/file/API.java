@@ -8,10 +8,13 @@ import io.trigger.forge.android.core.ForgeIntentResultHandler;
 import io.trigger.forge.android.core.ForgeParam;
 import io.trigger.forge.android.core.ForgeTask;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 import android.app.AlertDialog;
@@ -27,9 +30,11 @@ import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.MediaStore.MediaColumns;
 import android.util.Base64;
 
+import com.google.gson.JsonObject;
+
 public class API {
 	public static void getImage(final ForgeTask task) {
-		task.performAsync(new Runnable() {			
+		task.performAsync(new Runnable() {
 			@Override
 			public void run() {
 				final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
@@ -66,10 +71,10 @@ public class API {
 								imageUri = ForgeApp.getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 								tmpReturnUri = imageUri.toString();
 							}
-							
+
 							final String returnUri = tmpReturnUri;
 							intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-							
+
 							handler = new ForgeIntentResultHandler() {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
@@ -87,7 +92,7 @@ public class API {
 						default:
 							intent = new Intent(Intent.ACTION_PICK);
 							intent.setType("image/*");
-							
+
 							handler = new ForgeIntentResultHandler() {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
@@ -109,8 +114,8 @@ public class API {
 				final DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
 					@Override
 					public void onCancel(DialogInterface dialog) {
-						task.error("User cancelled image capture", "EXPECTED_FAILURE", null);							
-					}					
+						task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
+					}
 				};
 
 				if (task.params.has("source") && task.params.get("source").getAsString().equals("camera")) {
@@ -132,14 +137,14 @@ public class API {
 						}
 					});
 				}
-				
+
 			}
 		});
 	}
 
 	public static void getVideo(final ForgeTask task) {
 		task.performUI(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				final DialogInterface.OnClickListener clickListener = new DialogInterface.OnClickListener() {
@@ -150,11 +155,11 @@ public class API {
 						case 0:
 							intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 							intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-							
+
 							if (task.params.has("videoDuration")) {
 								intent.putExtra(MediaStore.EXTRA_DURATION_LIMIT, task.params.get("videoDuration").getAsInt());
 							}
-							
+
 							handler = new ForgeIntentResultHandler() {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
@@ -164,16 +169,16 @@ public class API {
 												// Bug in Nexus 4.3 devices (maybe other 4.3 devices so try this trick on all 4.3 devices that return null)
 												// https://code.google.com/p/android/issues/detail?id=57996
 												long max_val = 0;
-										    	Cursor cursor = ForgeApp.getActivity().getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, new String[] { "MAX(_id) as max_id" }, null, null, "_id");
-										    	if (cursor.moveToFirst()) {
-										    		max_val = cursor.getLong(cursor.getColumnIndex("max_id"));
-										    		task.success(MediaStore.Video.Media.EXTERNAL_CONTENT_URI.toString()+"/"+max_val);
-										    		return;
-										    	}
+												Cursor cursor = ForgeApp.getActivity().getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, new String[] { "MAX(_id) as max_id" }, null, null, "_id");
+												if (cursor.moveToFirst()) {
+													max_val = cursor.getLong(cursor.getColumnIndex("max_id"));
+													task.success(MediaStore.Video.Media.EXTERNAL_CONTENT_URI.toString()+"/"+max_val);
+													return;
+												}
 											} else {
 												task.error("Unknown error capturing video", "UNEXPECTED_FAILURE", null);
 											}
-										} else {									
+										} else {
 											task.success(data.getData().toString());
 										}
 									} else if (resultCode == RESULT_CANCELED) {
@@ -188,7 +193,7 @@ public class API {
 						default:
 							intent = new Intent(Intent.ACTION_PICK);
 							intent.setType("video/*");
-							
+
 							handler = new ForgeIntentResultHandler() {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
@@ -206,7 +211,7 @@ public class API {
 						ForgeApp.intentWithHandler(intent, handler);
 					}
 				};
-				
+
 				if (task.params.has("source") && task.params.get("source").getAsString().equals("camera")) {
 					clickListener.onClick(null, 0);
 				} else if (task.params.has("source") && task.params.get("source").getAsString().equals("gallery")) {
@@ -255,7 +260,7 @@ public class API {
 
 	public static void string(final ForgeTask task) {
 		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
-			task.error("Invalid parameters sent to forge.file.base64", "BAD_INPUT", null);
+			task.error("Invalid parameters sent to forge.file.string", "BAD_INPUT", null);
 			return;
 		}
 		task.performAsync(new Runnable() {
@@ -264,6 +269,47 @@ public class API {
 					task.success(new String(new ForgeFile(ForgeApp.getActivity(), task.params).data()));
 				} catch (Exception e) {
 					task.error("Error reading file", "UNEXPECTED_FAILURE", null);
+				}
+			}
+		});
+	}
+
+	public static void info(final ForgeTask task) {
+		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
+			task.error("Invalid parameters sent to forge.file.metadata", "BAD_INPUT", null);
+			return;
+		}
+		task.performAsync(new Runnable() {
+			public void run() {
+				try {
+					Uri uri = Uri.parse(task.params.get("uri").getAsString());
+					long size = ForgeFile.assetForUri(ForgeApp.getActivity(), uri).getLength();
+					long time = 0;
+					if (uri.getScheme().equals("content")) {
+						Cursor cursor = null;
+						try {
+							String[] projection = { MediaStore.MediaColumns.DATE_ADDED };
+							cursor = ForgeApp.getActivity().getContentResolver().query(uri, projection, null, null, null);
+							if (cursor.moveToFirst()) {
+								time = cursor.getLong(0) * 1000;
+							}
+						} catch (Exception e) {
+						} finally {
+							if (cursor != null) {
+								cursor.close();
+							}
+						}
+					} else {
+						time = (new File(uri.getPath())).lastModified();
+					}
+					SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+					df.setTimeZone(TimeZone.getTimeZone("UTC"));
+					JsonObject result = new JsonObject();
+					result.addProperty("size", size);
+					result.addProperty("date", df.format(new Date(time)));
+					task.success(result);
+				} catch (Exception e) {
+					task.error(e.getMessage(), "UNEXPECTED_FAILURE", null);
 				}
 			}
 		});
@@ -325,12 +371,12 @@ public class API {
 					dir = new java.io.File(dir, "Android/data/" + ForgeApp.getActivity().getApplicationContext().getPackageName() + "/files/");
 				}
 				final java.io.File saveFile = new java.io.File(dir, fileName);
-				
+
 				try {
 					saveFile.createNewFile();
-					
+
 					task.performAsync(new Runnable() {
-						
+
 						@Override
 						public void run() {
 							try {
@@ -352,7 +398,7 @@ public class API {
 									input.close();
 								}
 							} catch (IOException e) {
-								
+
 							}
 						}
 					});
@@ -362,7 +408,7 @@ public class API {
 			}
 		});
 	}
-	
+
 	public static void remove(final ForgeTask task) {
 		if (new ForgeFile(ForgeApp.getActivity(), task.params).remove()) {
 			task.success();

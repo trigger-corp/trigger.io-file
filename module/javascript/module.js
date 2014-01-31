@@ -66,6 +66,16 @@ forge['file'] = {
 		forge.internal.call("file.getLocal", {name: path}, success, error);
 	},
 	/**
+	 * Returns file information
+	 *
+	 * @param {{uri: string, name: string}} file
+	 * @param {function(object)=} success
+	 * @param {function({message: string}=} error
+	 */
+	'info': function (file, success, error) {
+		forge.internal.call("file.info", file, success, error);
+	},
+	/**
 	 * Get the base64 value for a files contents.
 	 *
 	 * @param {{uri: string, name: string}} file

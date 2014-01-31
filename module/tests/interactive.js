@@ -1,3 +1,4 @@
+/* global forge, module, asyncTest, equal, start, ok, Yes, No, askQuestion */
 module("forge.file");
 
 if (forge.is.mobile()) {
@@ -93,7 +94,7 @@ if (forge.is.mobile()) {
 								start();
 							}
 						});
-					},  function (e) {
+					},	function (e) {
 						ok(false, "API call failure: "+e.message);
 						start();
 					});
@@ -282,5 +283,30 @@ if (forge.is.mobile()) {
 			ok(false, "Image not loaded");
 			start();
 		}});
+	});
+
+	asyncTest("Select image from camera roll and check file info", 2, function() {
+		var runTest = function () {
+			forge.file.getImage(function (file) {
+				forge.file.info(file, function (info) {
+					ok(true, "file.info claims success");
+					askQuestion("Does the following file information describe the file: " +
+								JSON.stringify(info), {
+						Yes: function () {
+							ok(true, "File information is correct");
+							start();
+						},
+						No: function () {
+							ok(false, "User claims failure");
+							start();
+						}
+					});
+				}, function (e) {
+					ok(false, "API call failure: " + e.message);
+					start();
+				});
+			});
+		};
+		askQuestion("When prompted take a picture with the camera or select a file from the gallery", { Ok: runTest });
 	});
 }

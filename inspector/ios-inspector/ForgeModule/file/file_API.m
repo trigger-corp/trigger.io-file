@@ -10,7 +10,6 @@
 #import "file_Delegate.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 
-
 @implementation file_API
 
 + (void)getImage:(ForgeTask*)task source:(NSString*)source {
@@ -61,9 +60,43 @@
 	}
 }
 
++ (void)info:(ForgeTask*)task {
+	if (![task.params objectForKey:@"uri"] || [task.params objectForKey:@"uri"] == [NSNull null]) {
+		[task error:@"Invalid parameters sent to file.size" type:@"BAD_INPUT" subtype:nil];
+	}
+
+	NSString *uri = [task.params objectForKey:@"uri"];
+	NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
+	[fmt setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
+	[fmt setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+
+	if ([uri hasPrefix:@"/"]) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+			unsigned long long size = [[[NSFileManager defaultManager] attributesOfItemAtPath:uri error:NULL] fileSize];
+			NSDate *date = [[[NSFileManager defaultManager] attributesOfItemAtPath:uri error:NULL] fileCreationDate];
+			[task success:@{@"size": [NSNumber numberWithUnsignedLongLong:size],
+							@"date": [fmt stringFromDate:date] }];
+		});
+	} else {
+		ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+		[library assetForURL:[NSURL URLWithString:uri] resultBlock:^(ALAsset *asset) {
+			if (asset) {
+				unsigned long long size = [asset defaultRepresentation].size;
+				NSDate *date = [asset valueForProperty:ALAssetPropertyDate];
+				[task success:@{@"size": [NSNumber numberWithUnsignedLongLong:size],
+								@"date": [fmt stringFromDate:date] }];
+			} else {
+				[task error:@"Failed to read file size" type:@"UNEXPECTED_FAILURE" subtype:nil];
+			}
+		} failureBlock:^(NSError *error) {
+			[task error:[error localizedDescription] type:@"EXPECTED_FAILURE" subtype:nil];
+		}];
+	}
+}
+
 + (void)base64:(ForgeTask*)task {
 	if (![task.params objectForKey:@"uri"] || [task.params objectForKey:@"uri"] == [NSNull null]) {
-		[task error:@"Invalid paramters sent to file.base64" type:@"BAD_INPUT" subtype:nil];
+		[task error:@"Invalid parameters sent to file.base64" type:@"BAD_INPUT" subtype:nil];
 	}
 	[[[ForgeFile alloc] initWithFile:task.params] data:^(NSData *data) {
 		[task success:[data base64EncodingWithLineLength:0]];
@@ -74,7 +107,7 @@
 
 + (void)string:(ForgeTask*)task {
 	if (![task.params objectForKey:@"uri"] || [task.params objectForKey:@"uri"] == [NSNull null]) {
-		[task error:@"Invalid paramters sent to file.base64" type:@"BAD_INPUT" subtype:nil];
+		[task error:@"Invalid parameters sent to file.base64" type:@"BAD_INPUT" subtype:nil];
 	}
 	[[[ForgeFile alloc] initWithFile:task.params] data:^(NSData *data) {
 		[task success:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
@@ -86,10 +119,10 @@
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)url {
 	NSString *uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, CFUUIDCreate(NULL));
 	NSString *tempFile = [NSTemporaryDirectory() stringByAppendingPathComponent:[uuid stringByAppendingString:[[[[NSURL URLWithString:url] path] pathComponents] lastObject]]];
-	
+
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:url]];
-		
+
 		if ([data writeToFile:tempFile atomically:YES]) {
 			[[NSFileManager defaultManager] addSkipBackupAttributeToItemAtPath:tempFile];
 			[task success:tempFile];
@@ -102,10 +135,10 @@
 + (void)saveURL:(ForgeTask*)task url:(NSString*)url {
 	NSString *uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, CFUUIDCreate(NULL));
 	NSString *tempFile = [[[[NSFileManager defaultManager] applicationSupportDirectory] stringByAppendingPathComponent:uuid] stringByAppendingString:[[[[NSURL URLWithString:url] path] pathComponents] lastObject]];
-	
+
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:url]];
-		
+
 		if ([data writeToFile:tempFile atomically:YES]) {
 			[[NSFileManager defaultManager] addSkipBackupAttributeToItemAtPath:tempFile];
 			[task success:tempFile];

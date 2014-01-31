@@ -42,6 +42,7 @@
 				didReturn = YES;
 				[task success:path];
 			} else {
+				// TODO Write image metadata: http://www.altdevblogaday.com/2011/05/11/adding-metadata-to-ios-images-the-easy-way/
 				// Save a camera picture in the library then return the save image's URI
 				ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
 				
