@@ -98,7 +98,7 @@ public class API {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
 									if (resultCode == RESULT_OK) {
-										task.success(data.toUri(0));
+										task.success(data.getDataString());
 									} else if (resultCode == RESULT_CANCELED) {
 										task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
 									} else {
