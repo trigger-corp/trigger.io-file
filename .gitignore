@@ -17,4 +17,5 @@ inspector/an-inspector/ForgeModule/.project
 inspector/an-inspector/ForgeModule/AndroidManifest.xml
 inspector/an-inspector/ForgeModule/project.properties
 inspector/ios-inspector/ForgeModule/build
+inspector/ios-inspector/ForgeModule/ForgeModule.xcodeproj/xcuserdata
 inspector/ios-inspector/build
