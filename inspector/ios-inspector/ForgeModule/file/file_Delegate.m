@@ -117,7 +117,7 @@
 	
 	picker.delegate = self;
 	
-	if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
+    if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
 		UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
 		keepPopover = popover;
 		[popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];

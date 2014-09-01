@@ -1,8 +1,8 @@
 {
-	"changes": "* Fix for security exception when selecting images from Picasa or Google+ galleries",
-	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-	"min_platform_version": "v2.1.0",
-	"namespace": "file",
-	"platform_version": "v2.1.0",
-	"version": "2.4"
+    "changes": "* Support arm64 devices running iOS 8", 
+    "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.", 
+    "min_platform_version": "v2.1.0", 
+    "namespace": "file", 
+    "platform_version": "v2.2.0", 
+    "version": "2.5"
 }

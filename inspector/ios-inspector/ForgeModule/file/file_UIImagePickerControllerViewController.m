@@ -28,6 +28,7 @@
 }
 
 - (void) viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
 	[(file_Delegate*)self.delegate didDisappear];
 }
 
