@@ -8,8 +8,8 @@
 
 #import "file_API.h"
 #import "file_Delegate.h"
-#import "UIActionSheet+SimplyShowInView.h"
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <ForgeCore/UIActionSheet+UIAlertInView.h>
 
 @implementation file_API
 
@@ -19,7 +19,11 @@
 		&& ![source isEqualToString:@"camera"] && ![source isEqualToString:@"gallery"]) {
 		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:@"Pick a source" delegate:delegate cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Camera", @"Gallery", nil];
 		menu.delegate = delegate;
-		[menu simplyShowInView:[[ForgeApp sharedApp] viewController].view];
+        if ([menu respondsToSelector:@selector(alertInView:)]) {
+            [menu alertInView:[[ForgeApp sharedApp] viewController].view];
+        } else {
+            [menu showInView:[[ForgeApp sharedApp] viewController].view];
+        }
 	} else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]
 			   && [source isEqualToString:@"camera"]) {
 		[delegate actionSheet:nil didDismissWithButtonIndex:0];
@@ -34,7 +38,11 @@
 		&& ![source isEqualToString:@"camera"] && ![source isEqualToString:@"gallery"]) {
 		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:@"Pick a source" delegate:delegate cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Camera", @"Gallery", nil];
 		menu.delegate = delegate;
-		[menu simplyShowInView:[[ForgeApp sharedApp] viewController].view];
+        if ([menu respondsToSelector:@selector(alertInView:)]) {
+            [menu alertInView:[[ForgeApp sharedApp] viewController].view];
+        } else {
+            [menu showInView:[[ForgeApp sharedApp] viewController].view];
+        }
 	} else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]
 			   && [source isEqualToString:@"camera"]) {
 		[delegate actionSheet:nil didDismissWithButtonIndex:0];

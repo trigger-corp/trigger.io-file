@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		710FCBC619B4694000DD4F27 /* UIActionSheet+SimplyShowInView.m in Sources */ = {isa = PBXBuildFile; fileRef = 710FCBC519B4694000DD4F27 /* UIActionSheet+SimplyShowInView.m */; };
 		B31B6D5215C13D5200854074 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B31B6D5115C13D5200854074 /* Foundation.framework */; };
 		B31B6D6F15C1467100854074 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B31B6D6E15C1467100854074 /* CoreFoundation.framework */; };
 		B37C3A5D162717A200B50A60 /* ForgeCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B37C3A5C162717A200B50A60 /* ForgeCore.framework */; };
@@ -21,8 +20,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		710FCBC419B4694000DD4F27 /* UIActionSheet+SimplyShowInView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIActionSheet+SimplyShowInView.h"; sourceTree = "<group>"; };
-		710FCBC519B4694000DD4F27 /* UIActionSheet+SimplyShowInView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIActionSheet+SimplyShowInView.m"; sourceTree = "<group>"; };
 		71F71CDF19A61FDC00B3D370 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B31B6D4E15C13D5200854074 /* libForgeModule.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libForgeModule.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B31B6D5115C13D5200854074 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -108,8 +105,6 @@
 				B3EE023616B2F8740029452B /* file_Delegate.m */,
 				B3EE023716B2F8740029452B /* file_UIImagePickerControllerViewController.h */,
 				B3EE023816B2F8740029452B /* file_UIImagePickerControllerViewController.m */,
-				710FCBC419B4694000DD4F27 /* UIActionSheet+SimplyShowInView.h */,
-				710FCBC519B4694000DD4F27 /* UIActionSheet+SimplyShowInView.m */,
 			);
 			path = file;
 			sourceTree = "<group>";
@@ -192,7 +187,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				710FCBC619B4694000DD4F27 /* UIActionSheet+SimplyShowInView.m in Sources */,
 				B3EE023916B2F8740029452B /* file_API.m in Sources */,
 				B3EE023A16B2F8740029452B /* file_Delegate.m in Sources */,
 				B3EE023B16B2F8740029452B /* file_UIImagePickerControllerViewController.m in Sources */,
@@ -242,7 +236,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 i386 arm64 armv7s";
 			};
 			name = Debug;
 		};
@@ -272,7 +266,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "armv7 armv7s i386 arm64";
+				VALID_ARCHS = "armv7 i386 arm64 armv7s";
 			};
 			name = Release;
 		};
