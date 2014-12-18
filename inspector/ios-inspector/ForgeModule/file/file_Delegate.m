@@ -62,10 +62,29 @@
 			}];
 
 		}
+
 	} else {
-		// If we already have a URI return it immediately.
-		didReturn = YES;
-		[task success:[[info objectForKey:@"UIImagePickerControllerReferenceURL"] absoluteString]];
+        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+        NSURL *url = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
+
+        // Workaround the lack of support for Photostream images on iOS8
+        [library assetForURL:url resultBlock:^(ALAsset *asset) {
+            if (asset) {
+                didReturn = YES;
+                [task success:[url absoluteString]];
+
+            } else {
+                // On iOS 8.1 [library assetForUrl] Photo Streams always returns
+                // nil so we're going to have to save a copy locally
+                UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+                NSString *path = [NSString stringWithFormat:@"%@/%@.jpg", [[NSFileManager defaultManager] applicationSupportDirectory], [NSString stringWithFormat: @"%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0]];
+                [UIImageJPEGRepresentation(image, 0.8) writeToFile:path atomically:YES];
+                didReturn = YES;
+                [task success:path];
+            }
+        } failureBlock:^(NSError *error) {
+             [task error:[NSString stringWithFormat:@"Cannot load asset: %@", [error localizedDescription]] type:@"UNEXPECTED_FAILURE" subtype:nil];
+        }];
 	}
 	[self closePicker];
 }
