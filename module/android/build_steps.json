@@ -5,5 +5,12 @@
 				"permission": "android.permission.WRITE_EXTERNAL_STORAGE"
 			}
 		}
+	},
+	{
+		"do": {
+			"android_add_permission": {
+				"permission": "com.google.android.apps.photos.permission.GOOGLE_PHOTOS"
+			}
+		}
 	}
 ]
