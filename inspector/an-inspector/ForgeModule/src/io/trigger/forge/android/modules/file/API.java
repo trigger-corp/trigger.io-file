@@ -35,6 +35,10 @@ import com.google.gson.JsonObject;
 
 public class API {
 	public static void getImage(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.performAsync(new Runnable() {
 			@Override
 			public void run() {
@@ -144,6 +148,10 @@ public class API {
 	}
 
 	public static void getVideo(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.performUI(new Runnable() {
 
 			@Override
@@ -236,14 +244,26 @@ public class API {
 	}
 
 	public static void getLocal(final ForgeTask task, @ForgeParam("name") String name) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.success(new ForgeFile(ForgeApp.getActivity(), name).toJSON());
 	}
 
 	public static void isFile(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.success(new ForgeFile(ForgeApp.getActivity(), task.params).exists());
 	}
 
 	public static void base64(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
 			task.error("Invalid parameters sent to forge.file.base64", "BAD_INPUT", null);
 			return;
@@ -260,6 +280,10 @@ public class API {
 	}
 
 	public static void string(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
 			task.error("Invalid parameters sent to forge.file.string", "BAD_INPUT", null);
 			return;
@@ -276,6 +300,10 @@ public class API {
 	}
 
 	public static void info(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
 			task.error("Invalid parameters sent to forge.file.metadata", "BAD_INPUT", null);
 			return;
@@ -317,10 +345,18 @@ public class API {
 	}
 
 	public static void URL(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.success(new ForgeFile(ForgeApp.getActivity(), task.params).url());
 	}
 
 	public static void cacheURL(final ForgeTask task, @ForgeParam("url") final String url) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.performUI(new Runnable() {
 			@Override
 			public void run() {
@@ -360,6 +396,10 @@ public class API {
 	}
 
 	public static void saveURL(final ForgeTask task, @ForgeParam("url") final String url) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		task.performUI(new Runnable() {
 			public void run() {
 				String fileName = UUID.randomUUID().toString();
@@ -411,6 +451,10 @@ public class API {
 	}
 
 	public static void remove(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		if (new ForgeFile(ForgeApp.getActivity(), task.params).remove()) {
 			task.success();
 		} else {
@@ -419,6 +463,10 @@ public class API {
 	}
 
 	public static void clearCache(final ForgeTask task) {
+		if (!EventListener.checkPermissions()) {
+			task.error("Permission denied", "UNEXPECTED_FAILURE", null);
+			return;
+		}
 		for (java.io.File file : ForgeApp.getActivity().getCacheDir().listFiles()) {
 			file.delete();
 		}
