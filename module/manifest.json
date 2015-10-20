@@ -1,8 +1,8 @@
 {
-	"changes": "* Fixing inability to access files on some platforms that do not have the Google Photos permission.",
+	"changes": "* Fix inability to access files on some platforms that do not have the Google Photos permission. (Tx @davidwatkinz!)",
 	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
 	"min_platform_version": "v2.2.16",
 	"namespace": "file",
 	"platform_version": "v2.2.16",
-	"version": "2.8.3"
+	"version": "2.9"
 }
