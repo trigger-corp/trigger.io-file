@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -102,7 +104,7 @@ public class API {
 								@Override
 								public void result(int requestCode, int resultCode, Intent data) {
 									if (resultCode == RESULT_OK) {
-										task.success(data.getDataString());
+										task.success(API.fixImageUri(data.getData()).toString());
 									} else if (resultCode == RESULT_CANCELED) {
 										task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
 									} else {
@@ -471,5 +473,30 @@ public class API {
 			file.delete();
 		}
 		task.success();
+	}
+	
+	/**
+	 * Workaround for the various bugs introduced by Google Photos
+	 * 
+	 * Converts Uri's in the form:
+	 *     content://com.google.android.apps.photos.contentprovider/-1/1/content%3A%2F%2Fmedia%2Fexternal%2Fimages%2Fmedia%2F107/ACTUAL/740661381
+	 * To:  
+	 *     content://media/external/images/media/107
+	 *     
+	 * @param uri
+	 * @return
+	 */
+	private static Uri fixImageUri(Uri uri) {
+		Pattern pattern = Pattern.compile("(?=content://media.*\\d)(.*)(?=/ACTUAL/.*\\d)");
+	    if (uri.getPath().contains("content")) {
+	        Matcher matcher = pattern.matcher(uri.getPath());
+	        if (matcher.find()) {
+	            return Uri.parse(matcher.group(1));
+	        } else {
+	        	return uri;
+	        }
+	    } else {
+	        return uri;
+	    }
 	}
 }
