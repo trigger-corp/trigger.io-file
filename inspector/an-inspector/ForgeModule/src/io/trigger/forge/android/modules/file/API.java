@@ -120,7 +120,7 @@ public class API {
 								if (resultCode == RESULT_OK) {
 									Uri uri = data.getData();
 									// crosswalk has issues accessing google photos image content :-/
-									if (!ForgeActivity.isCrosswalk) {
+									if (!ForgeApp.getActivity().isCrosswalk()) {
 										task.success(API.fixImageUri(data.getData()).toString());
 										return;
 									} else if (!uri.toString().startsWith("content://com.google.android.apps.photos.contentprovider")) {
