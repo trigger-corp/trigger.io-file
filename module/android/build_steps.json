@@ -9,6 +9,20 @@
 	{
 		"do": {
 			"android_add_permission": {
+				"permission": "android.permission.READ_EXTERNAL_STORAGE"
+			}
+		}
+	},
+	{
+		"do": {
+			"android_add_permission": {
+				"permission": "android.permission.CAMERA"
+			}
+		}
+	},
+	{
+		"do": {
+			"android_add_permission": {
 				"permission": "com.google.android.apps.photos.permission.GOOGLE_PHOTOS"
 			}
 		}

@@ -1,8 +1,8 @@
 {
-	"changes": "* Fixed: file.getImage() would throw a security exception with some versions of Google Photos",
+	"changes": "* **Important:** Minimum platform version is `v2.4.1`\n* Fixed: Android security exception when selecting Videos from Google Photos\n* Only present app permissions dialog when module methods are invoked.",
 	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-	"min_platform_version": "v2.2.16",
+	"min_platform_version": "v2.4.1",
 	"namespace": "file",
-	"platform_version": "v2.2.16",
-	"version": "2.10"
+	"platform_version": "v2.4.1",
+	"version": "2.11"
 }
