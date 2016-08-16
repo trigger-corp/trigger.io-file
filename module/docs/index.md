@@ -16,12 +16,19 @@ The ``forge.file`` namespace allows storage of files on the local system as well
    [forge.request.ajax()](/modules/request/current/docs/index.html#forgerequestajaxoptions). For example if ``myFile1`` and ``myFile2`` were
    images returned by [forge.file.getImage()](index.html#forgefilegetimageparams-success-error):
 
-	    forge.request.ajax({
-	        url: "http://example.com/file_upload",
-	        files: [myFile1, myFile2]
-	    });
+		forge.request.ajax({
+			url: "http://example.com/file_upload",
+			files: [myFile1, myFile2]
+		});
 
 > ::Note:: For more information about how to cache remote files in your app, see [Caching files](/docs/current/recipes/offline/cache.html).
+
+
+## Config options
+
+usage_description
+:   This key lets you describe the reason your app accesses the user's camera and photo library. When the system prompts the user to allow access, this string is displayed as part of the alert.
+
 
 ##API
 

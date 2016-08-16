@@ -1,0 +1,12 @@
+{
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+		"usage_description": {
+			"title": "Usage Description",
+			"description": "This key lets you describe the reason your app accesses the user's camera and photo library. When the system prompts the user to allow access, this string is displayed as part of the alert.",
+			"type": "string",
+			"required": true
+		}
+	}
+}

@@ -1,8 +1,8 @@
 {
-	"changes": "* **Important:** Minimum platform version is `v2.4.1`\n* Fixed: Android security exception when selecting Videos from Google Photos\n* Only present app permissions dialog when module methods are invoked.",
+	"changes": "* New mandatory configuration field `usage_description` to describe the reason your app acceses the user's camera and photo library on iOS 10 devices.",
 	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-	"min_platform_version": "v2.4.1",
+	"min_platform_version": "v2.4.6",
 	"namespace": "file",
-	"platform_version": "v2.4.1",
-	"version": "2.11"
+	"platform_version": "v2.4.6",
+	"version": "2.12"
 }
