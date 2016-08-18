@@ -7,5 +7,9 @@
 	{ "do": { "set_in_info_plist": {
 		"key": "NSPhotoLibraryUsageDescription",
 		"value": "{{modules.file.config.usage_description}}"
+	} } },
+	{ "do": { "set_in_info_plist": {
+		"key": "NSMicrophoneUsageDescription",
+		"value": "{{modules.file.config.usage_description}}"
 	} } }
 ]
