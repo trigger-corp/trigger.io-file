@@ -162,6 +162,26 @@ remove them, if the file is only going to be used temporarily then
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
+!method: forge.file.getStorageInformation(success, error)
+!param: success `function(object)` callback to be invoked when no errors occur
+!description: Returns device storage information. Supported attributes: `total`, `free`, `cache`
+!platforms: iOS, Android
+!param: error `function(content)` called with details of any error which may occur
+
+The returned information contains the following keys:
+
+* `total`: The total storage space of the device in bytes.
+* `free`: The amount of free storage space available on the device in bytes.
+* `app`: The amount of storage space used by the app in bytes.
+* `cache`: The amount of storage space used by the app's cache in bytes.
+
+To get the size in other units, you can simply divide the return values by:
+
+* Kilobytes: 1024
+* Megabytes: Math.pow(1024, 2)
+* Gigabytes: Math.pow(1024, 3)
+
+
 ##Permissions
 
 On Android this module will add the ``WRITE_EXTERNAL_STORAGE``

@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Stack;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -30,6 +31,8 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -634,6 +637,68 @@ public class API {
 			}
 		});
 	}
+
+	public static void getStorageInformation(final ForgeTask task) {
+		ForgeApp.getActivity().requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new EventAccessBlock() {
+			@Override
+			public void run(boolean granted) {
+				if (!granted) {
+					task.error("Permission denied. User didn't grant access to storage.", "EXPECTED_FAILURE", null);
+					return;
+				}
+				task.performAsync(new Runnable() {
+					public void run() {
+						try {
+							PackageManager pm = ForgeApp.getActivity().getPackageManager();
+							String dirName = pm.getPackageInfo(ForgeApp.getActivity().getPackageName(), 0).applicationInfo.dataDir;
+							File dataDir = new File(dirName);
+							File cacheDir = ForgeApp.getActivity().getCacheDir();
+
+							JsonObject result = new JsonObject();
+							result.addProperty("total", dataDir.getTotalSpace());
+							result.addProperty("free", dataDir.getUsableSpace());
+							result.addProperty("app", getDirectorySize(dataDir));
+							result.addProperty("cache", getDirectorySize(cacheDir));
+							task.success(result);
+
+						} catch (Exception e) {
+							task.error("Error reading storage information", "UNEXPECTED_FAILURE", null);
+						}
+					}
+				});
+			}
+		});
+	}
+
+
+	/**
+	 * Calculate physical size of directory in bytes
+	 *
+	 * @param path
+	 * @return
+     */
+	private static long getDirectorySize(File path) {
+		long result = 0;
+
+		Stack<File> dirs= new Stack<File>();
+		dirs.clear();
+		dirs.push(path);
+
+		while(!dirs.isEmpty()) {
+			File current = dirs.pop();
+			File[] files = current.listFiles();
+			for(File file: files){
+				if (file.isDirectory()) {
+					dirs.push(file);
+				} else {
+					result += file.length();
+				}
+			}
+		}
+
+		return result;
+	}
+
 
 	/**
 	 * Workaround for the various bugs introduced by Google Photos

@@ -1,6 +1,32 @@
 /* global forge, module, asyncTest, equal, start, ok, Yes, No, askQuestion */
 module("forge.file");
 
+asyncTest("Diskspace", 1, function () {
+	forge.file.getStorageInformation(function (info) {
+		var msg = "Device storage information: <ul>";
+		var gig = Math.pow(1024, 3);
+		msg += "<li>Total: " + info.total / gig + "</li>";
+		msg += "<li>Free: " + info.free / gig + "</li>";
+		msg += "<li>App: " + info.app / gig + "</li>";
+		msg += "<li>Cache: " + info.cache / gig + "</li>";
+		msg += "</ul>Does this look correct?";
+		askQuestion(msg, {
+			Yes: function () {
+				ok(true, "Success with forge.file.getStorageInformation");
+				start();
+
+			}, No: function () {
+				ok(false, "User claims failure with forge.file.getStorageInformation");
+				start();
+			}
+		});
+	}, function (e) {
+		ok(false, "API call failure: "+e.message);
+		start();
+	});
+});
+
+
 if (forge.is.mobile()) {
 	asyncTest("Camera", 5, function() {
 		askQuestion("Does this device have a camera?<br>If yes use the camera to take a picture when given the option", {"I have a camera": function () {

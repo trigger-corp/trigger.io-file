@@ -1,8 +1,8 @@
 {
-	"changes": "* New mandatory configuration field `usage_description` to describe the reason your app acceses the user's camera and photo library on iOS 10 devices.",
+	"changes": "* New method to retrieve device storage information: `file.getStorageInformation()`.",
 	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
 	"min_platform_version": "v2.4.6",
 	"namespace": "file",
 	"platform_version": "v2.4.6",
-	"version": "2.12"
+	"version": "2.13"
 }

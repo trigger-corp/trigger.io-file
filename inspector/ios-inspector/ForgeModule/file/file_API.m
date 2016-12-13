@@ -177,4 +177,35 @@
 	[task success:nil];
 }
 
++ (void)getStorageInformation:(ForgeTask*)task {
+    NSError *error = nil;
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSDictionary *dictionary = [[NSFileManager defaultManager] attributesOfFileSystemForPath:[paths lastObject] error: &error];
+    NSString* appDir = [[NSBundle mainBundle] bundlePath];
+    NSString* cacheDir = NSTemporaryDirectory();
+
+    if (!dictionary || !cacheDir || !appDir) {
+        [task error:@"Error reading storage information" type:@"UNEXPECTED_FAILURE" subtype:nil];
+        return;
+    }
+
+    [task success:@{@"total": [dictionary objectForKey: NSFileSystemSize],
+                    @"free": [dictionary objectForKey:NSFileSystemFreeSize],
+                    @"app": [file_API getDirectorySize:appDir],
+                    @"cache": [file_API getDirectorySize:cacheDir]}];
+}
+
++ (NSNumber*)getDirectorySize:(NSString *)path {
+    unsigned long long int result = 0;
+
+    NSArray *files = [[NSFileManager defaultManager] subpathsAtPath:path];
+
+    for (NSString *file in files) {
+        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[path stringByAppendingPathComponent:file] error:nil];
+        result += [attrs fileSize];
+    }
+
+    return [NSNumber numberWithUnsignedLongLong:result];
+}
+
 @end

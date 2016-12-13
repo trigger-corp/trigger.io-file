@@ -21,5 +21,8 @@
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)url;
 + (void)remove:(ForgeTask*)task;
 + (void)clearCache:(ForgeTask*)task;
++ (void)getStorageInformation:(ForgeTask*)task;
+
++ (NSNumber*)getDirectorySize:(NSString *)path;
 
 @end
