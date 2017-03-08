@@ -3,7 +3,6 @@ package io.trigger.forge.android.modules.file;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
-import io.trigger.forge.android.core.ForgeActivity;
 import io.trigger.forge.android.core.ForgeActivity.EventAccessBlock;
 import io.trigger.forge.android.core.ForgeApp;
 import io.trigger.forge.android.core.ForgeFile;
@@ -31,7 +30,6 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -45,6 +43,12 @@ import android.util.Base64;
 import com.google.gson.JsonObject;
 
 public class API {
+
+	// i8n strings
+	public static String io_trigger_dialog_capture_camera_description;
+	public static String io_trigger_dialog_capture_source_camera;
+	public static String io_trigger_dialog_capture_source_gallery;
+	public static String io_trigger_dialog_capture_pick_source;
 
 	public static void getImage(final ForgeTask task) {
 		final Runnable camera = new Runnable() {
@@ -80,7 +84,7 @@ public class API {
 						} else {
 							ContentValues values = new ContentValues();
 							values.put(MediaColumns.TITLE, fileName);
-							values.put(ImageColumns.DESCRIPTION, "Image capture by camera");
+							values.put(ImageColumns.DESCRIPTION, io_trigger_dialog_capture_camera_description);
 							values.put(MediaColumns.MIME_TYPE, "image/jpeg");
 							imageUri = ForgeApp.getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 							tmpReturnUri = imageUri.toString();
@@ -196,9 +200,9 @@ public class API {
 					task.performUI(new Runnable() {
 						@Override
 						public void run() {
-							final CharSequence[] items = {"Camera", "Gallery"};
+							final CharSequence[] items = {io_trigger_dialog_capture_source_camera, io_trigger_dialog_capture_source_gallery};
 							AlertDialog.Builder builder = new AlertDialog.Builder(ForgeApp.getActivity());
-							builder.setTitle("Pick a source");
+							builder.setTitle(io_trigger_dialog_capture_pick_source);
 							builder.setItems(items, clickListener);
 							builder.setCancelable(true);
 							builder.setOnCancelListener(cancelListener);
@@ -342,9 +346,9 @@ public class API {
 					task.performUI(new Runnable() {
 						@Override
 						public void run() {
-							final CharSequence[] items = {"Camera", "Gallery"};
+							final CharSequence[] items = {io_trigger_dialog_capture_source_camera, io_trigger_dialog_capture_source_gallery};
 							AlertDialog.Builder builder = new AlertDialog.Builder(ForgeApp.getActivity());
-							builder.setTitle("Pick a source");
+							builder.setTitle(io_trigger_dialog_capture_pick_source);
 							builder.setItems(items, clickListener);
 							builder.setCancelable(false);
 							AlertDialog alert = builder.create();
@@ -436,7 +440,7 @@ public class API {
 
 	public static void info(final ForgeTask task) {
 		if (!task.params.has("uri") || task.params.get("uri").isJsonNull()) {
-			task.error("Invalid parameters sent to forge.file.metadata", "BAD_INPUT", null);
+			task.error("Invalid parameters sent to forge.file.info. Please make sure you're passing a 'file' object.", "BAD_INPUT", null);
 			return;
 		}
 		ForgeApp.getActivity().requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new EventAccessBlock() {
@@ -476,7 +480,7 @@ public class API {
 							result.addProperty("date", df.format(new Date(time)));
 							task.success(result);
 						} catch (Exception e) {
-							task.error(e.getMessage(), "UNEXPECTED_FAILURE", null);
+							task.error("File not found: " + task.params.get("uri").getAsString(), "EXPECTED_FAILURE", null);
 						}
 					}
 				});

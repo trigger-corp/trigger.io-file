@@ -1,8 +1,8 @@
 {
-	"changes": "* New method to retrieve device storage information: `file.getStorageInformation()`.",
+	"changes": "* Implement Android dialog messages as string resources to allow for custom app internationalizations.\n* Fix crash when passing an invalid `file` object to `forge.file.info()`.",
 	"description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-	"min_platform_version": "v2.4.6",
+	"min_platform_version": "v2.5.1",
 	"namespace": "file",
-	"platform_version": "v2.4.6",
-	"version": "2.13"
+	"platform_version": "v2.5.1",
+	"version": "2.14"
 }

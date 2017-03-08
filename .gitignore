@@ -10,7 +10,6 @@ inspector/ios-inspector/ForgeCore.bundle
 inspector/an-inspector/ForgeInspector
 inspector/an-inspector/ForgeModule/.settings
 inspector/an-inspector/ForgeModule/libs
-inspector/an-inspector/ForgeModule/res
 inspector/an-inspector/ForgeModule/trigger-gen
 inspector/an-inspector/ForgeModule/.classpath
 inspector/an-inspector/ForgeModule/.project
