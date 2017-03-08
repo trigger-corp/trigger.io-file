@@ -83,6 +83,10 @@
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 			unsigned long long size = [[[NSFileManager defaultManager] attributesOfItemAtPath:uri error:NULL] fileSize];
 			NSDate *date = [[[NSFileManager defaultManager] attributesOfItemAtPath:uri error:NULL] fileCreationDate];
+            if (date == nil) {
+                [task error:[NSString stringWithFormat:@"File not found: %@", [task.params objectForKey:@"uri"]] type:@"EXPECTED_FAILURE" subtype:nil];
+                return;
+            }
 			[task success:@{@"size": [NSNumber numberWithUnsignedLongLong:size],
 							@"date": [fmt stringFromDate:date] }];
 		});
