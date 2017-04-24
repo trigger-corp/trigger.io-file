@@ -13,11 +13,21 @@
 
 @implementation file_API
 
+NSString *io_trigger_dialog_capture_camera_description = @"Not Used";
+NSString *io_trigger_dialog_capture_source_camera = @"Camera";
+NSString *io_trigger_dialog_capture_source_gallery = @"Gallery";
+NSString *io_trigger_dialog_capture_pick_source = @"Pick a source";
+NSString *io_trigger_dialog_cancel = @"Cancel";
+
 + (void)getImage:(ForgeTask*)task source:(NSString*)source {
 	file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
 	if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]
 		&& ![source isEqualToString:@"camera"] && ![source isEqualToString:@"gallery"]) {
-		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:@"Pick a source" delegate:delegate cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Camera", @"Gallery", nil];
+		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:io_trigger_dialog_capture_pick_source
+                                                          delegate:delegate
+                                                 cancelButtonTitle:io_trigger_dialog_cancel
+                                            destructiveButtonTitle:nil
+                                                 otherButtonTitles:io_trigger_dialog_capture_source_camera, io_trigger_dialog_capture_source_gallery, nil];
 		menu.delegate = delegate;
         if ([menu respondsToSelector:@selector(alertInView:)]) {
             [menu alertInView:[[ForgeApp sharedApp] viewController].view];
@@ -36,7 +46,10 @@
 	file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
 	if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]
 		&& ![source isEqualToString:@"camera"] && ![source isEqualToString:@"gallery"]) {
-		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:@"Pick a source" delegate:delegate cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Camera", @"Gallery", nil];
+		UIActionSheet *menu = [[UIActionSheet alloc] initWithTitle:io_trigger_dialog_capture_pick_source
+                                                          delegate:delegate
+                                                 cancelButtonTitle:io_trigger_dialog_cancel
+                                            destructiveButtonTitle:nil otherButtonTitles:io_trigger_dialog_capture_source_camera, io_trigger_dialog_capture_source_gallery, nil];
 		menu.delegate = delegate;
         if ([menu respondsToSelector:@selector(alertInView:)]) {
             [menu alertInView:[[ForgeApp sharedApp] viewController].view];

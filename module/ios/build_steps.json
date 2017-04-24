@@ -11,5 +11,31 @@
 	{ "do": { "set_in_info_plist": {
 		"key": "NSMicrophoneUsageDescription",
 		"value": "{{modules.file.config.usage_description}}"
+	} } },
+
+	{ "do": { "ios_add_i8n_plist": {
+		"lang": "en",
+		"key": "io_trigger_dialog_cancel",
+		"string": "Cancel"
+	} } },
+	{ "do": { "ios_add_i8n_plist": {
+		"lang": "en",
+		"key": "io_trigger_dialog_capture_camera_description",
+		"string": "Not Used"
+	} } },
+	{ "do": { "ios_add_i8n_plist": {
+		"lang": "en",
+		"key": "io_trigger_dialog_capture_source_camera",
+		"string": "Camera"
+	} } },
+	{ "do": { "ios_add_i8n_plist": {
+		"lang": "en",
+		"key": "io_trigger_dialog_capture_source_gallery",
+		"string": "Gallery"
+	} } },
+	{ "do": { "ios_add_i8n_plist": {
+		"lang": "en",
+		"key": "io_trigger_dialog_capture_pick_source",
+		"string": "Pick a source"
 	} } }
 ]
