@@ -38,6 +38,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.ImageColumns;
 import android.provider.MediaStore.MediaColumns;
+import android.support.v4.content.FileProvider;
 import android.util.Base64;
 
 import com.google.gson.JsonObject;
@@ -79,7 +80,11 @@ public class API {
 							}
 							dir.mkdirs();
 							java.io.File file = new java.io.File(dir, fileName);
-							imageUri = Uri.fromFile(file);
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                imageUri = FileProvider.getUriForFile(ForgeApp.getActivity(), ForgeApp.getFileProviderAuthority(), file);
+                            } else {
+								imageUri = Uri.fromFile(file);
+							}
 							tmpReturnUri = imageUri.toString();
 						} else {
 							ContentValues values = new ContentValues();
