@@ -19,8 +19,8 @@
 	NSString* type;
 }
 
-- (file_Delegate*) initWithTask:(ForgeTask*)initTask andParams:(id)initParams andType:(NSString*)initType;
-- (void)closePicker;
+- (file_Delegate*_Nullable) initWithTask:(ForgeTask*_Nullable)initTask andParams:(id _Nullable )initParams andType:(NSString*_Nullable)initType;
+- (void)closePicker:(void (^ __nullable)(void))success;
 - (void)cancel;
 - (void)didDisappear;
 

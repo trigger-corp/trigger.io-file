@@ -23,7 +23,7 @@
 /* Begin PBXFileReference section */
 		710471F11EADF22100876B91 /* file_EventListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_EventListener.h; sourceTree = "<group>"; };
 		710471F21EADF22100876B91 /* file_EventListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_EventListener.m; sourceTree = "<group>"; };
-		710A8BB81F160FAC00D026FF /* simulator-bug-workaround.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "simulator-bug-workaround.plist"; sourceTree = "<group>"; };
+		710A8BB81F160FAC00D026FF /* placeholder.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = placeholder.plist; sourceTree = "<group>"; };
 		71F71CDF19A61FDC00B3D370 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		B31B6D4E15C13D5200854074 /* libForgeModule.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libForgeModule.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		B31B6D5115C13D5200854074 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -70,7 +70,7 @@
 		B31B6D4315C13D5200854074 = {
 			isa = PBXGroup;
 			children = (
-				710A8BB81F160FAC00D026FF /* simulator-bug-workaround.plist */,
+				710A8BB81F160FAC00D026FF /* placeholder.plist */,
 				B3EE023216B2F8740029452B /* file */,
 				B31B6D5015C13D5200854074 /* Frameworks */,
 				B31B6D4F15C13D5200854074 /* Products */,
@@ -350,7 +350,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = "$(SRCROOT)/placeholder.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = NO;
@@ -372,7 +372,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = "$(SRCROOT)/placeholder.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = NO;

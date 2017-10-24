@@ -9,142 +9,172 @@
 #import "file_Delegate.h"
 #import "file_UIImagePickerControllerViewController.h"
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <Photos/Photos.h>
 
 @implementation file_Delegate
 
 - (file_Delegate*) initWithTask:(ForgeTask *)initTask andParams:(id)initParams andType:(NSString *)initType {
-	if (self = [super init]) {
-		task = initTask;
-		params = initParams;
-		didReturn = NO;
-		type = initType;
-		// "retain"
-		me = self;
-	}	
-	return self;
+    if (self = [super init]) {
+        task = initTask;
+        params = initParams;
+        didReturn = NO;
+        type = initType;
+        // "retain"
+        me = self;
+    }
+    return self;
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-	[self cancel];
-	[self closePicker];
+    [self cancel];
+    [self closePicker:nil];
 }
 
-// Callback when an image is chosen/taken with the camera
+
+/**
+ * Five cases:
+ *
+ * 1. Camera Image => File          => url (/path/to/image)                    => data [x]
+ * 2. Camera Image => Photo Library => url (photo-library://image/5B345FEF...) => data [x]
+ * 3. Camera Video => Photo Library => url (photo-library://video/5B345FEF...) => data [a]
+ * 4. Gallery Image                 => url (photo-library://image/5B345FEF...) => data [x]
+ * 5. Gallery Video                 => url (photo-library://video/5B345FEF...) => data [a]
+ */
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-	if (keepPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
-		if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeImage]) {
-			// Where are we saving
-			UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
-			if ([[params objectForKey:@"saveLocation"] isEqualToString:@"file"]) {
-				NSString *path = [NSString stringWithFormat:@"%@/%@.jpg", [[NSFileManager defaultManager] applicationSupportDirectory], [NSString stringWithFormat: @"%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0]];
-				
-				[UIImageJPEGRepresentation(image, 0.8) writeToFile:path atomically:YES];
-				didReturn = YES;
-				[task success:path];
-			} else {
-				// TODO Write image metadata: http://www.altdevblogaday.com/2011/05/11/adding-metadata-to-ios-images-the-easy-way/
-				// Save a camera picture in the library then return the save image's URI
-				ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-				
-				didReturn = YES;
-				[library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)image.imageOrientation completionBlock:^(NSURL* url, NSError* error) {
-					[task success:[url absoluteString]];
-				}];
-			}
-		} else if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeMovie]) {
-			
-			// Save a video in the library then return the saved video's URI
-			ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-			
-			didReturn = YES;
-			[library writeVideoAtPathToSavedPhotosAlbum:[info objectForKey:@"UIImagePickerControllerMediaURL"] completionBlock:^(NSURL* url, NSError* error) {
-				[task success:[url absoluteString]];
-			}];
+    didReturn = YES;
+    [self closePicker:^{
 
-		}
+        if (keepPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
+            if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeImage]) {
+                UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
 
-	} else {
-        ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-        NSURL *url = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
+                // 1. Save as a local file
+                if ([[params objectForKey:@"saveLocation"] isEqualToString:@"file"]) {
+                    NSString *path = [NSString stringWithFormat:@"%@/%@.jpg", [[NSFileManager defaultManager] applicationSupportDirectory], [NSString stringWithFormat: @"%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0]];
+                    [UIImageJPEGRepresentation(image, 0.8) writeToFile:path atomically:YES];
+                    [task success:path]; // image: /path/to/image
+                    return;
+                }
 
-        // Workaround the lack of support for Photostream images on iOS8
-        [library assetForURL:url resultBlock:^(ALAsset *asset) {
-            if (asset) {
-                didReturn = YES;
-                [task success:[url absoluteString]];
+                // TODO Write image metadata: http://www.altdevblogaday.com/2011/05/11/adding-metadata-to-ios-images-the-easy-way/
+                // 2. Save a camera picture in the library then return the save image's URI
+                __block NSString* localIdentifier;
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+                    localIdentifier = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
+                } completionHandler:^(BOOL success, NSError *error) {
+                    if (!success) {
+                        [task error:[error localizedDescription]];
+                        return;
+                    }
+                    NSString *url = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", localIdentifier];
+                    [task success:url]; // image: photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
+                }];
+
+            } else if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeMovie]) {
+                // 3. Save a video in the library then return the saved video's URI
+                NSURL *mediaURL = [info objectForKey:@"UIImagePickerControllerMediaURL"];
+                __block NSString* localIdentifier;
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:mediaURL];
+                    localIdentifier = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
+                } completionHandler:^(BOOL success, NSError *error) {
+                    if (!success) {
+                        [task error:[error localizedDescription]];
+                        return;
+                    }
+                    NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", localIdentifier];
+                    [task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
+                }];
+            }
+
+        } else {  // source is gallery
+            NSURL *referenceURL = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
+            PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
+            if ([assetResult count] == 0) {
+                [task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", referenceURL]];
+                return;
+            }
+            PHAsset *asset = [assetResult firstObject];
+            if (asset.mediaType == PHAssetMediaTypeImage) {
+                // 4. Select a gallery image and return a reference to the image
+                NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
+                [task success:ret]; // photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
+
+            } else if (asset.mediaType == PHAssetMediaTypeVideo) {
+                // 5. Select a gallery video and return a reference to the video
+                NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
+                [task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
 
             } else {
-                // On iOS 8.1 [library assetForUrl] Photo Streams always returns
-                // nil so we're going to have to save a copy locally
-                UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
-                NSString *path = [NSString stringWithFormat:@"%@/%@.jpg", [[NSFileManager defaultManager] applicationSupportDirectory], [NSString stringWithFormat: @"%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0]];
-                [UIImageJPEGRepresentation(image, 0.8) writeToFile:path atomically:YES];
-                didReturn = YES;
-                [task success:path];
+                [task error:[NSString stringWithFormat:@"Unknown asset type for reference url: %@", referenceURL]];
             }
-        } failureBlock:^(NSError *error) {
-             [task error:[NSString stringWithFormat:@"Cannot load asset: %@", [error localizedDescription]] type:@"UNEXPECTED_FAILURE" subtype:nil];
-        }];
-	}
-	[self closePicker];
+        }
+    }];
 }
+
 
 - (void) cancel {
-	if (!didReturn) {
-		didReturn = YES;
-		[task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
-	}
+    if (!didReturn) {
+        didReturn = YES;
+        [task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
+    }
 }
+
 
 - (void) didDisappear {
-	[self cancel];
-	// "release"
-	me = nil;
+    [self cancel];
+    // "release"
+    me = nil;
 }
 
-- (void)closePicker {
-	if (([ForgeViewController isIPad]) && keepPicker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
-		[keepPopover dismissPopoverAnimated:YES];
-	} else {
-		[[[ForgeApp sharedApp] viewController] dismissModalViewControllerAnimated:YES];
-	}
+
+- (void)closePicker:(void (^ __nullable)(void))success {
+    if (([ForgeViewController isIPad]) && keepPicker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
+        [keepPopover dismissPopoverAnimated:YES];
+        if (success != nil) success();
+    } else {
+        [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
+            if (success != nil) success();
+        }];
+    }
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
-	if (buttonIndex != 0 && buttonIndex != 1) {
-		didReturn = YES;
-		[task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
-		// "release"
-		me = nil;
-		return;
-	}
-	file_UIImagePickerControllerViewController *picker = [[file_UIImagePickerControllerViewController alloc] init];
-	keepPicker = picker;
-	
-	if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] && buttonIndex == 0) {
-		picker.sourceType = UIImagePickerControllerSourceTypeCamera;		
-	} else {
-		picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-	}
+    if (buttonIndex != 0 && buttonIndex != 1) {
+        didReturn = YES;
+        [task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
+        // "release"
+        me = nil;
+        return;
+    }
+    file_UIImagePickerControllerViewController *picker = [[file_UIImagePickerControllerViewController alloc] init];
+    keepPicker = picker;
 
-	// Video or Photo
-	picker.mediaTypes = [NSArray arrayWithObjects:type, nil];
-	
-	if ([type isEqual:(NSString*)kUTTypeMovie] && [params objectForKey:@"videoDuration"] && [params objectForKey:@"videoDuration"] != [NSNull null]) {
-		picker.videoMaximumDuration = [[params objectForKey:@"videoDuration"] doubleValue];
-	}
-	
-	picker.delegate = self;
-	
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] && buttonIndex == 0) {
+        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+    } else {
+        picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    }
+
+    // Video or Photo
+    picker.mediaTypes = [NSArray arrayWithObjects:type, nil];
+
+    if ([type isEqual:(NSString*)kUTTypeMovie] && [params objectForKey:@"videoDuration"] && [params objectForKey:@"videoDuration"] != [NSNull null]) {
+        picker.videoMaximumDuration = [[params objectForKey:@"videoDuration"] doubleValue];
+    }
+
+    picker.delegate = self;
+
     if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
-		UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
-		keepPopover = popover;
-		[popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-	} else {	
-		dispatch_async(dispatch_get_main_queue(), ^{
-			[[[ForgeApp sharedApp] viewController] presentModalViewController:picker animated:NO];
-		});
-	}
+        UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
+        keepPopover = popover;
+        [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
+        });
+    }
 }
 
 @end
