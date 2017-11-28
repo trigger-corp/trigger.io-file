@@ -8,6 +8,8 @@
 
 #import "file_Delegate.h"
 #import "file_UIImagePickerControllerViewController.h"
+#import "file_Util.h"
+
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <Photos/Photos.h>
 
@@ -45,8 +47,8 @@
     [self closePicker:^{
 
         if (keepPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
-            if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeImage]) {
-                UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+            if ([[info objectForKey:UIImagePickerControllerMediaType] isEqualToString:(NSString *)kUTTypeImage]) {
+                UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
 
                 // 1. Save as a local file
                 if ([[params objectForKey:@"saveLocation"] isEqualToString:@"file"]) {
@@ -71,9 +73,9 @@
                     [task success:url]; // image: photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
                 }];
 
-            } else if ([[info objectForKey:@"UIImagePickerControllerMediaType"] isEqualToString:(NSString *)kUTTypeMovie]) {
+            } else if ([[info objectForKey:UIImagePickerControllerMediaType] isEqualToString:(NSString *)kUTTypeMovie]) {
                 // 3. Save a video in the library then return the saved video's URI
-                NSURL *mediaURL = [info objectForKey:@"UIImagePickerControllerMediaURL"];
+                NSURL *mediaURL = [info objectForKey:UIImagePickerControllerMediaURL];
                 __block NSString* localIdentifier;
                 [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
                     PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:mediaURL];
@@ -89,26 +91,40 @@
             }
 
         } else {  // source is gallery
-            NSURL *referenceURL = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
-            PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
-            if ([assetResult count] == 0) {
-                [task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", referenceURL]];
+             PHAsset *asset = nil;
+            if (@available(iOS 11_0, *)) {
+               asset = [info objectForKey:UIImagePickerControllerPHAsset];
+            } else {
+                NSURL *referenceURL = [info objectForKey:UIImagePickerControllerReferenceURL];
+                PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
+                if ([assetResult count] >= 1) {
+                    asset = [assetResult firstObject];
+                }
+            }
+            if (asset == nil) {
+                [task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
                 return;
             }
-            PHAsset *asset = [assetResult firstObject];
+
             if (asset.mediaType == PHAssetMediaTypeImage) {
                 // 4. Select a gallery image and return a reference to the image
                 NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
                 [task success:ret]; // photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
 
             } else if (asset.mediaType == PHAssetMediaTypeVideo) {
-                // 5. Select a gallery video and return a reference to the video
-                NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
-                [task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
+                // 5. Select a gallery video, potentially transcode it and return a reference to the video
+                NSString *videoQuality = [params objectForKey:@"videoQuality"] ? [params objectForKey:@"videoQuality"] : @"default";
+                if ([videoQuality isEqualToString:@"default"]) {
+                    NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
+                    [task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
+                } else {
+                    [file_Util transcode:asset withTask:task videoQuality:videoQuality]; // /path/to/video
+                }
 
             } else {
-                [task error:[NSString stringWithFormat:@"Unknown asset type for reference url: %@", referenceURL]];
+                [task error:[NSString stringWithFormat:@"Unknown media type for selection: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
             }
+
         }
     }];
 }
@@ -160,8 +176,21 @@
     // Video or Photo
     picker.mediaTypes = [NSArray arrayWithObjects:type, nil];
 
-    if ([type isEqual:(NSString*)kUTTypeMovie] && [params objectForKey:@"videoDuration"] && [params objectForKey:@"videoDuration"] != [NSNull null]) {
-        picker.videoMaximumDuration = [[params objectForKey:@"videoDuration"] doubleValue];
+    if ([type isEqual:(NSString*)kUTTypeMovie] && picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
+        if ([params objectForKey:@"videoDuration"] && [params objectForKey:@"videoDuration"] != nil) {
+            picker.videoMaximumDuration = [[params objectForKey:@"videoDuration"] doubleValue];
+        }
+        NSString *videoQuality = @"high";
+        if ([params objectForKey:@"videoQuality"] && [params objectForKey:@"videoQuality"] != nil) {
+            videoQuality = [params objectForKey:@"videoQuality"];
+        }
+        if ([videoQuality isEqualToString:@"high"]) {
+            picker.videoQuality = UIImagePickerControllerQualityTypeHigh;
+        } else if ([videoQuality isEqualToString:@"medium"]) {
+            picker.videoQuality = UIImagePickerControllerQualityTypeMedium;
+        } else {
+            picker.videoQuality = UIImagePickerControllerQualityTypeLow;
+        }
     }
 
     picker.delegate = self;
