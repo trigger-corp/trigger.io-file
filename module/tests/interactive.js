@@ -1,7 +1,7 @@
 /* global forge, module, asyncTest, start, ok, askQuestion */
 
 module("forge.file");
-/*
+
 asyncTest("Select image from camera roll and check file info", 2, function() {
     var runTest = function () {
         forge.file.getImage(function (file) {
@@ -86,7 +86,7 @@ if (forge.is.ios()) {
         askQuestion("When prompted select the video you recorded from the gallery", { Ok: runTest });
     });
 }
-*/
+
 
 asyncTest("Embedding video in webview", 1, function() {
     forge.file.getVideo({
@@ -114,7 +114,7 @@ asyncTest("Embedding video in webview", 1, function() {
 });
 
 
-/*
+
 asyncTest("Saving camera output to Gallery", 1, function() {
     forge.file.getImage({
             source: "camera",
@@ -492,4 +492,3 @@ asyncTest("Diskspace", 1, function () {
         start();
     });
 });
-*/

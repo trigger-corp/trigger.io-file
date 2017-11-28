@@ -80,7 +80,7 @@ The optional parameters can contain any combination of the following:
 -  ``source``: By default the user will be prompted to use the camera or
    select a video from the photo gallery, if you want to limit this
    choice you can set this to ``"camera"`` or ``"gallery"``.
-- ``videoQuality``: Transcode the selected or recorded video to a different quality level. Valid options are: `"low"`, "`medium`" and `"high"`.  The default setting is `"medium`. (iOS Only)
+- ``videoQuality``: Sets the video quality. Valid options are: `"default"`, `"low"`, "`medium`" and `"high"`.
 - ``videoDuration``: If the user records a new video then the video duration will be limited to the given length in seconds.
 
 Returned files will be accessible to the app as long as they exist on
