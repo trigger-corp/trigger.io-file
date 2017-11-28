@@ -16,10 +16,10 @@ The ``forge.file`` namespace allows storage of files on the local system as well
    [forge.request.ajax()](/modules/request/current/docs/index.html#forgerequestajaxoptions). For example if ``myFile1`` and ``myFile2`` were
    images returned by [forge.file.getImage()](index.html#forgefilegetimageparams-success-error):
 
-		forge.request.ajax({
-			url: "http://example.com/file_upload",
-			files: [myFile1, myFile2]
-		});
+        forge.request.ajax({
+            url: "http://example.com/file_upload",
+            files: [myFile1, myFile2]
+        });
 
 > ::Note:: For more information about how to cache remote files in your app, see [Caching files](/docs/current/recipes/offline/cache.html).
 
@@ -80,10 +80,14 @@ The optional parameters can contain any combination of the following:
 -  ``source``: By default the user will be prompted to use the camera or
    select a video from the photo gallery, if you want to limit this
    choice you can set this to ``"camera"`` or ``"gallery"``.
+- ``videoQuality``: Transcode the selected or recorded video to a different quality level. Valid options are: `"low"`, "`medium`" and `"high"`.  The default setting is `"medium`. (iOS Only)
 - ``videoDuration``: If the user records a new video then the video duration will be limited to the given length in seconds.
 
 Returned files will be accessible to the app as long as they exist on
 the device.
+
+Please note that tt is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it van vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for the active camera on the device.
+
 
 !method: forge.file.getLocal(path, success, error)
 !param: path `string` path to the file, e.g. "images/home.png".

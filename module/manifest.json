@@ -1,8 +1,8 @@
 {
-    "changes": "* Fixed: Race condition on iOS 11 when saving camera images to assets library",
+    "changes": "* New `videoQuality` option for `forge.file.getVideo()` method",
     "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-    "min_platform_version": "v2.6.2",
+    "min_platform_version": "v2.6.4",
     "namespace": "file",
-    "platform_version": "v2.6.2",
-    "version": "2.18"
+    "platform_version": "v2.6.4",
+    "version": "2.19"
 }

@@ -1,7 +1,7 @@
 /* global forge, module, asyncTest, start, ok, askQuestion */
 
 module("forge.file");
-
+/*
 asyncTest("Select image from camera roll and check file info", 2, function() {
     var runTest = function () {
         forge.file.getImage(function (file) {
@@ -28,10 +28,11 @@ asyncTest("Select image from camera roll and check file info", 2, function() {
 });
 
 
-asyncTest("Select a video from the gallery and check file info", 2, function() {
+asyncTest("Record a video with the camera and check file info", 2, function() {
     var runTest = function () {
         forge.file.getVideo({
-            source: "gallery"
+            source: "camera",
+            videoQuality: "high"
         }, function (file) {
             forge.file.info(file, function (info) {
                 ok(true, "file.info claims success");
@@ -56,8 +57,42 @@ asyncTest("Select a video from the gallery and check file info", 2, function() {
 });
 
 
+if (forge.is.ios()) {
+    asyncTest("Select the video you recorded with low quality and check file info", 2, function() {
+        var runTest = function () {
+            forge.file.getVideo({
+                source: "gallery",
+                videoQuality: "low"
+            }, function (file) {
+                forge.file.info(file, function (info) {
+                    ok(true, "file.info claims success");
+                    askQuestion("Is the file size smaller: " +
+                                JSON.stringify(info), {
+                                    Yes: function () {
+                                        ok(true, "File information is correct");
+                                        start();
+                                    },
+                                    No: function () {
+                                        ok(false, "User claims failure");
+                                        start();
+                                    }
+                                });
+                }, function (e) {
+                    ok(false, "API call failure: " + e.message);
+                    start();
+                });
+            });
+        };
+        askQuestion("When prompted select the video you recorded from the gallery", { Ok: runTest });
+    });
+}
+*/
+
 asyncTest("Embedding video in webview", 1, function() {
-    forge.file.getVideo(function (file) {
+    forge.file.getVideo({
+        source: "gallery",
+        videoQuality: "low"
+    }, function (file) {
         forge.file.URL(file, function (url) {
             askQuestion("Did your video just play: <video controls autoplay width=192 src='" + url + "'></video>", {
                 Yes: function () {
@@ -79,7 +114,7 @@ asyncTest("Embedding video in webview", 1, function() {
 });
 
 
-
+/*
 asyncTest("Saving camera output to Gallery", 1, function() {
     forge.file.getImage({
             source: "camera",
@@ -457,3 +492,4 @@ asyncTest("Diskspace", 1, function () {
         start();
     });
 });
+*/
