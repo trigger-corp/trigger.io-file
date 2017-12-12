@@ -91,7 +91,7 @@
             }
 
         } else {  // source is gallery
-             PHAsset *asset = nil;
+            PHAsset *asset = nil;
             if (@available(iOS 11_0, *)) {
                asset = [info objectForKey:UIImagePickerControllerPHAsset];
             } else {
@@ -192,18 +192,33 @@
             picker.videoQuality = UIImagePickerControllerQualityTypeLow;
         }
     }
-
     picker.delegate = self;
 
-    if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
-        UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
-        keepPopover = popover;
-        [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    if (picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary || picker.sourceType == UIImagePickerControllerSourceTypeSavedPhotosAlbum) {
+        // UIImagePickerController runs out of process as of iOS 11 so permissions will no longer be automatically requested when selecting from gallery
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            if (status != PHAuthorizationStatusAuthorized) {
+                [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+                return;
+            }
+            [self presentUIImagePickerController:picker];
+        }];
     } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
-        });
+        [self presentUIImagePickerController:picker];
     }
+}
+
+
+- (void) presentUIImagePickerController:(UIImagePickerController*)picker {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
+            UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
+            keepPopover = popover;
+            [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+        } else {
+                [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
+        }
+    });
 }
 
 @end

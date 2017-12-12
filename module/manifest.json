@@ -1,8 +1,8 @@
 {
-    "changes": "* New `videoQuality` option for `forge.file.getVideo()` method",
+    "changes": "* Fixed: iOS 11 devices don't ask for permission when selecting images from the gallery.",
     "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
     "min_platform_version": "v2.6.4",
     "namespace": "file",
     "platform_version": "v2.6.4",
-    "version": "2.19"
+    "version": "2.20"
 }
