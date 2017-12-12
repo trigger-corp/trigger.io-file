@@ -8,6 +8,10 @@
         "media": {
             "version": "2.5",
             "config": {}
+        },
+        "request": {
+            "version": "2.10.2",
+            "config": {}
         }
     }
 }

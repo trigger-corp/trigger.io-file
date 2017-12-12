@@ -2,6 +2,33 @@
 
 module("forge.file");
 
+if (forge.request) {
+
+    asyncTest("HTTP File upload", 1, function() {
+        forge.file.getVideo({
+            source: "gallery"
+        }, function (file) {
+            forge.request.ajax({
+                url: "http://httpbin.org/post",
+                files: [file],
+                success: function (data) {
+                    //data = JSON.parse(data);
+                    //data = JSON.stringify(data);
+                    forge.logging.log("Got data: " + data);
+                    //equal(data.files[0], 'test', "Uploaded value");
+                    ok(true);
+                    start();
+                },
+                error: function () {
+                    ok(false, "Ajax error callback");
+                    start();
+                }
+            });
+        });
+    });
+
+}
+
 asyncTest("Select image from camera roll and check file info", 2, function() {
     var runTest = function () {
         forge.file.getImage(function (file) {
