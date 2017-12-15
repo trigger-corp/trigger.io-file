@@ -3,19 +3,35 @@
 module("forge.file");
 
 if (forge.request) {
+    var upload_url = "http://httpbin.org/post";
 
-    asyncTest("HTTP File upload", 1, function() {
-        forge.file.getVideo({
-            source: "gallery"
-        }, function (file) {
+    asyncTest("File upload", 1, function() {
+        forge.file.getVideo(function (file) {
             forge.request.ajax({
-                url: "http://httpbin.org/post",
+                url: upload_url,
                 files: [file],
                 success: function (data) {
-                    //data = JSON.parse(data);
-                    //data = JSON.stringify(data);
-                    forge.logging.log("Got data: " + data);
-                    //equal(data.files[0], 'test', "Uploaded value");
+                    data = JSON.parse(data);
+                    forge.logging.log("Response: " + JSON.stringify(data.headers));
+                    start();
+                },
+                error: function () {
+                    ok(false, "Ajax error callback");
+                    start();
+                }
+            });
+        });
+    });
+
+    asyncTest("Raw File upload", 1, function() {
+        forge.file.getVideo(function (file) {
+            forge.request.ajax({
+                url: upload_url,
+                files: [file],
+                fileUploadMethod: "raw",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    forge.logging.log("Response: " + JSON.stringify(data.headers));
                     ok(true);
                     start();
                 },

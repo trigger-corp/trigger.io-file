@@ -194,18 +194,14 @@
     }
     picker.delegate = self;
 
-    if (picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary || picker.sourceType == UIImagePickerControllerSourceTypeSavedPhotosAlbum) {
-        // UIImagePickerController runs out of process as of iOS 11 so permissions will no longer be automatically requested when selecting from gallery
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-            if (status != PHAuthorizationStatusAuthorized) {
-                [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
-                return;
-            }
-            [self presentUIImagePickerController:picker];
-        }];
-    } else {
+    // As of iOS 11 UIImagePickerController runs out of process and we can no longer rely on getting permission request dialogs automatically
+    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+        if (status != PHAuthorizationStatusAuthorized) {
+            [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+            return;
+        }
         [self presentUIImagePickerController:picker];
-    }
+    }];
 }
 
 
@@ -216,7 +212,7 @@
             keepPopover = popover;
             [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
         } else {
-                [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
+            [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
         }
     });
 }
