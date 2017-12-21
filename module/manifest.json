@@ -1,8 +1,8 @@
 {
-    "changes": "* Fixed: Under some circumstances iOS 11 devices would not receive permission to access device media storage.",
+    "changes": "* Fixed: Conflict with Android media module",
     "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
     "min_platform_version": "v2.6.4",
     "namespace": "file",
     "platform_version": "v2.6.4",
-    "version": "2.20.1"
+    "version": "2.21"
 }
