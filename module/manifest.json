@@ -1,8 +1,8 @@
 {
-    "changes": "* Fixed: Conflict with Android media module",
+    "changes": "* Only use this version with the v2.7 betas\n* Automatically normalize URL's when using the httpd module",
     "description": "Access local files, download remote files and import files from camera or gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and use the camera or gallery to capture images.",
-    "min_platform_version": "v2.6.4",
+    "min_platform_version": "v2.7.1beta-1",
     "namespace": "file",
-    "platform_version": "v2.6.4",
-    "version": "2.21"
+    "platform_version": "v2.7.1beta-1",
+    "version": "2.22"
 }
