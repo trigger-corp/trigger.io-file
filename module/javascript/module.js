@@ -119,14 +119,19 @@ forge["file"] = {
             success = props;
         }
         // Avoid mutating original file
-        var url = {};
+        var newFile = {};
         for (var prop in file) {
-            url[prop] = file[prop];
+            newFile[prop] = file[prop];
         }
-        url.height = props.height || file.height || undefined;
-        url.width = props.width || file.width || undefined;
-        url = forge.httpd ? forge.httpd.normalize(url) : url;
-        forge.internal.call("file.URL", url, success, error);
+        newFile.height = props.height || file.height || undefined;
+        newFile.width = props.width || file.width || undefined;
+        if (forge.httpd && forge.config.modules.httpd.config.port) {
+            forge.internal.call("file.URL", newFile, function (url) {
+                success(forge.httpd.normalize(url));
+            }, error);
+        } else {
+            forge.internal.call("file.URL", newFile, success, error);
+        }
     },
 
     /**
