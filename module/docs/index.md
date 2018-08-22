@@ -1,7 +1,7 @@
-``file``: File and Camera access
-================================
+``file``: File and Gallery access
+=================================
 
-The ``forge.file`` namespace allows storage of files on the local system as well as capturing images with the camera or selecting them from the users saved photos.
+The ``forge.file`` namespace allows storage of files on the local system and selection from the users saved photos and videos.
 
 - File objects are simple JavaScript objects which contain at least a
    ``uri``. They can be serialised using JSON.stringify and safely
@@ -27,7 +27,7 @@ The ``forge.file`` namespace allows storage of files on the local system as well
 ## Config options
 
 usage_description
-:   This key lets you describe the reason your app accesses the user's camera and photo library. When the system prompts the user to allow access, this string is displayed as part of the alert.
+:   This key lets you describe the reason your app accesses the user's media gallery. When the system prompts the user to allow access, this string is displayed as part of the alert.
 
 
 ##API
@@ -35,7 +35,7 @@ usage_description
 !method: forge.file.getImage([params], success, error)
 !param: params `object` an optional object of parameters
 !param: success `function(file)` callback to be invoked when no errors occur (argument is the returned file)
-!description: Returns a file object for a image selected by the user from their photo gallery or (if possible on the device) taken using their camera.
+!description: Returns a file object for a image selected by the user from their photo gallery.
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
@@ -52,9 +52,6 @@ The optional parameters can contain any combination of the following:
    display. The stored image will not be resized.
 -  ``height`` (number): As ``width`` but sets a maximum height, both ``height``
    and ``width`` can be set.
--  ``source``: By default the user will be prompted to use the camera or
-   select an image from the photo gallery, if you want to limit this
-   choice you can set this to ``"camera"`` or ``"gallery"``.
 -  ``saveLocation``: By default camera photos will be saved to the
    device photo album, with this setting they can be forced to be saved
    within your application by using ``"file"``.
@@ -65,7 +62,7 @@ the device.
 !method: forge.file.getVideo([params], success, error)
 !param: params `object` an optional object of parameters
 !param: success `function(file)` callback to be invoked when no errors occur (argument is the returned file)
-!description: Returns a file object for a video selected by the user from their photo gallery or (if possible on the device) taken using their camera.
+!description: Returns a file object for a video selected by the user from their media gallery.
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
@@ -77,16 +74,13 @@ modules-file-permissions.
 
 The optional parameters can contain any combination of the following:
 
--  ``source``: By default the user will be prompted to use the camera or
-   select a video from the photo gallery, if you want to limit this
-   choice you can set this to ``"camera"`` or ``"gallery"``.
 - ``videoQuality``: Sets the video quality. Valid options are: `"default"`, `"low"`, "`medium`" and `"high"`.
 - ``videoDuration``: If the user records a new video then the video duration will be limited to the given length in seconds.
 
 Returned files will be accessible to the app as long as they exist on
 the device.
 
-Please note that tt is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it van vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for the active camera on the device.
+Please note that it is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it van vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for the active camera on the device.
 
 
 !method: forge.file.getLocal(path, success, error)

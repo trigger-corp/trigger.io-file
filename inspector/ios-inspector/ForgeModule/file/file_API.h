@@ -26,12 +26,3 @@
 + (NSNumber*)getDirectorySize:(NSString *)path;
 
 @end
-
-extern NSString *io_trigger_dialog_capture_camera_description;
-extern NSString *io_trigger_dialog_capture_source_camera;
-extern NSString *io_trigger_dialog_capture_source_gallery;
-extern NSString *io_trigger_dialog_capture_pick_source;
-extern NSString *io_trigger_dialog_cancel;
-
-
-

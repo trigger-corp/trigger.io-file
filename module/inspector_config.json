@@ -1,7 +1,7 @@
 {
     "this_module": {
         "config": {
-            "usage_description": "This app would like to look at pictures of your birthday"
+            "usage_description": "file.usage_description"
         }
     },
     "modules": {

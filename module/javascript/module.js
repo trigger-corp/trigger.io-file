@@ -17,6 +17,7 @@ forge["file"] = {
         if (!props) {
             props = {};
         }
+        props.source = "gallery";
         forge.internal.call("file.getImage", props, success && function (uri) {
             var file = {
                 uri: uri,
@@ -49,6 +50,7 @@ forge["file"] = {
         if (!props) {
             props = {};
         }
+        props.source = "gallery";
         forge.internal.call("file.getVideo", props, success && function (uri) {
             var file = {
                 uri: uri,

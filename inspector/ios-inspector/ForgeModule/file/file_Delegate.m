@@ -34,97 +34,46 @@
 
 
 /**
- * Five cases:
+ * Two cases:
  *
- * 1. Camera Image => File          => url (/path/to/image)                    => data [x]
- * 2. Camera Image => Photo Library => url (photo-library://image/5B345FEF...) => data [x]
- * 3. Camera Video => Photo Library => url (photo-library://video/5B345FEF...) => data [a]
- * 4. Gallery Image                 => url (photo-library://image/5B345FEF...) => data [x]
- * 5. Gallery Video                 => url (photo-library://video/5B345FEF...) => data [a]
+ * 1. Gallery Image                 => url (photo-library://image/5B345FEF...) => data [x]
+ * 2. Gallery Video                 => url (photo-library://video/5B345FEF...) => data [a]
  */
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     didReturn = YES;
     [self closePicker:^{
-
-        if (self->keepPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
-            if ([[info objectForKey:UIImagePickerControllerMediaType] isEqualToString:(NSString *)kUTTypeImage]) {
-                UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-
-                // 1. Save as a local file
-                if ([[self->params objectForKey:@"saveLocation"] isEqualToString:@"file"]) {
-                    NSString *path = [NSString stringWithFormat:@"%@/%@.jpg", [[NSFileManager defaultManager] applicationSupportDirectory], [NSString stringWithFormat: @"%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0]];
-                    [UIImageJPEGRepresentation(image, 0.8) writeToFile:path atomically:YES];
-                    [self->task success:path]; // image: /path/to/image
-                    return;
-                }
-
-                // TODO Write image metadata: http://www.altdevblogaday.com/2011/05/11/adding-metadata-to-ios-images-the-easy-way/
-                // 2. Save a camera picture in the library then return the save image's URI
-                __block NSString* localIdentifier;
-                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-                    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
-                    localIdentifier = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
-                } completionHandler:^(BOOL success, NSError *error) {
-                    if (!success) {
-                        [self->task error:[error localizedDescription]];
-                        return;
-                    }
-                    NSString *url = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", localIdentifier];
-                    [self->task success:url]; // image: photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
-                }];
-
-            } else if ([[info objectForKey:UIImagePickerControllerMediaType] isEqualToString:(NSString *)kUTTypeMovie]) {
-                // 3. Save a video in the library then return the saved video's URI
-                NSURL *mediaURL = [info objectForKey:UIImagePickerControllerMediaURL];
-                __block NSString* localIdentifier;
-                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-                    PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromVideoAtFileURL:mediaURL];
-                    localIdentifier = [[assetChangeRequest placeholderForCreatedAsset] localIdentifier];
-                } completionHandler:^(BOOL success, NSError *error) {
-                    if (!success) {
-                        [self->task error:[error localizedDescription]];
-                        return;
-                    }
-                    NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", localIdentifier];
-                    [self->task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
-                }];
+        PHAsset *asset = nil;
+        if (@available(iOS 11_0, *)) {
+           asset = [info objectForKey:UIImagePickerControllerPHAsset];
+        } else {
+            NSURL *referenceURL = [info objectForKey:UIImagePickerControllerReferenceURL];
+            PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
+            if ([assetResult count] >= 1) {
+                asset = [assetResult firstObject];
             }
+        }
+        if (asset == nil) {
+            [self->task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
+            return;
+        }
 
-        } else {  // source is gallery
-            PHAsset *asset = nil;
-            if (@available(iOS 11_0, *)) {
-               asset = [info objectForKey:UIImagePickerControllerPHAsset];
+        if (asset.mediaType == PHAssetMediaTypeImage) {
+            // 4. Select a gallery image and return a reference to the image
+            NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
+            [self->task success:ret]; // photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
+
+        } else if (asset.mediaType == PHAssetMediaTypeVideo) {
+            // 5. Select a gallery video, potentially transcode it and return a reference to the video
+            NSString *videoQuality = [self->params objectForKey:@"videoQuality"] ? [self->params objectForKey:@"videoQuality"] : @"default";
+            if ([videoQuality isEqualToString:@"default"]) {
+                NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
+                [self->task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
             } else {
-                NSURL *referenceURL = [info objectForKey:UIImagePickerControllerReferenceURL];
-                PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
-                if ([assetResult count] >= 1) {
-                    asset = [assetResult firstObject];
-                }
-            }
-            if (asset == nil) {
-                [self->task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
-                return;
+                [file_Util transcode:asset withTask:self->task videoQuality:videoQuality]; // /path/to/video
             }
 
-            if (asset.mediaType == PHAssetMediaTypeImage) {
-                // 4. Select a gallery image and return a reference to the image
-                NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
-                [self->task success:ret]; // photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
-
-            } else if (asset.mediaType == PHAssetMediaTypeVideo) {
-                // 5. Select a gallery video, potentially transcode it and return a reference to the video
-                NSString *videoQuality = [self->params objectForKey:@"videoQuality"] ? [self->params objectForKey:@"videoQuality"] : @"default";
-                if ([videoQuality isEqualToString:@"default"]) {
-                    NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
-                    [self->task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
-                } else {
-                    [file_Util transcode:asset withTask:self->task videoQuality:videoQuality]; // /path/to/video
-                }
-
-            } else {
-                [self->task error:[NSString stringWithFormat:@"Unknown media type for selection: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
-            }
-
+        } else {
+            [self->task error:[NSString stringWithFormat:@"Unknown media type for selection: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
         }
     }];
 }
