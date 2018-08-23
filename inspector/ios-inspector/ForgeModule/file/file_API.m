@@ -6,10 +6,13 @@
 //  Copyright (c) 2012 Trigger Corp. All rights reserved.
 //
 
-#import "file_API.h"
-#import "file_Delegate.h"
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <ForgeCore/UIActionSheet+UIAlertInView.h>
+
+#import "JLPhotosPermission.h"
+
+#import "file_API.h"
+#import "file_Delegate.h"
 
 @implementation file_API
 
@@ -158,6 +161,36 @@
     }
 
     return [NSNumber numberWithUnsignedLongLong:result];
+}
+
+
++ (void)permissions_check:(ForgeTask*)task permission:(NSString *)permission {
+    JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
+    JLAuthorizationStatus status = [jlpermission authorizationStatus];
+    [task success:[NSNumber numberWithBool:status == JLPermissionAuthorized]];
+}
+
+
++ (void)permissions_request:(ForgeTask*)task permission:(NSString *)permission {
+    JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
+    if ([jlpermission authorizationStatus] == JLPermissionAuthorized) {
+        [task success:[NSNumber numberWithBool:YES]];
+        return;
+    }
+
+    NSDictionary* params = task.params;
+    NSString* rationale = [params objectForKey:@"rationale"];
+    if (rationale != nil) {
+        [jlpermission setRationale:rationale];
+    }
+
+    [jlpermission authorize:^(BOOL granted, NSError * _Nullable error) {
+        [jlpermission setRationale:nil]; // reset rationale
+        if (error) {
+            [ForgeLog d:[NSString stringWithFormat:@"permissions.check '%@' failed with error: %@", permission, error]];
+        }
+        [task success:[NSNumber numberWithBool:granted]];
+    }];
 }
 
 @end
