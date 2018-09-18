@@ -95,7 +95,7 @@
 
 
 - (void)closePicker:(void (^ __nullable)(void))success {
-    if (([ForgeViewController isIPad]) && keepPicker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
+    if (([ForgeUtil isIpad]) && keepPicker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
         [keepPopover dismissPopoverAnimated:YES];
         if (success != nil) success();
     } else {
@@ -161,7 +161,7 @@
 
 - (void) presentUIImagePickerController:(UIImagePickerController*)picker {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (([ForgeViewController isIPad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
+        if (([ForgeUtil isIpad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
             UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
             self->keepPopover = popover;
             [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
