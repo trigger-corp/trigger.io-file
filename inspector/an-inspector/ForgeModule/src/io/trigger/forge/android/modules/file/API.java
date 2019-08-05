@@ -22,13 +22,8 @@ import java.util.Date;
 import java.util.Stack;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -36,9 +31,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.MediaStore.Images.ImageColumns;
-import android.provider.MediaStore.MediaColumns;
-import android.support.v4.content.FileProvider;
 import android.util.Base64;
 
 import com.google.gson.JsonObject;
