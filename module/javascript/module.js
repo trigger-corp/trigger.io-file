@@ -127,12 +127,12 @@ forge["file"] = {
         }
         newFile.height = props.height || file.height || undefined;
         newFile.width = props.width || file.width || undefined;
-        if (forge.httpd && forge.config.modules.httpd.config.port) {
+        if (forge.flags.android_disable_httpd === true || forge.flags.ios_disable_httpd === true) {
+            forge.internal.call("file.URL", newFile, success, error);
+        } else {
             forge.internal.call("file.URL", newFile, function (url) {
                 success(forge.httpd.normalize(url));
             }, error);
-        } else {
-            forge.internal.call("file.URL", newFile, success, error);
         }
     },
 
