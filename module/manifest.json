@@ -1,8 +1,8 @@
 {
-    "changes": "* Move `file.getImage()` and `file.getVideo()` options that rely on camera and/or microphone access permissions to the new `capture` module.\n* Automatically normalize URL's when using the httpd module\n* Fixed: iOS app store rejections caused by unused permission API's",
+    "changes": "* Support for ForgeCore-integrated httpd module\n* Migrate Google support API usage to androidx",
     "description": "Access local files, download remote files and import files from the gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and import images from the gallery.",
-    "min_platform_version": "v2.7.1",
+    "min_platform_version": "v2.8.0",
     "namespace": "file",
-    "platform_version": "v2.7.1",
-    "version": "2.23"
+    "platform_version": "v2.8.0",
+    "version": "2.24"
 }
