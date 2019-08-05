@@ -3,7 +3,7 @@
 module("forge.file");
 
 if (forge.request) {
-    var upload_url = "http://httpbin.org/post";
+    var upload_url = "https://httpbin.org/post";
 
     asyncTest("File upload", 1, function() {
         forge.file.getVideo(function (file) {
