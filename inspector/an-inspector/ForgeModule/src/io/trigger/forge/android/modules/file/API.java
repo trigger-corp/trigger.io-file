@@ -53,32 +53,7 @@ public class API {
 
                                 if (resultCode == RESULT_OK) {
                                     Uri uri = data.getData();
-                                    // crosswalk has issues accessing google photos image content :-/
-                                    if (!ForgeApp.getActivity().isCrosswalk()) {
-                                        task.success(ForgeFile.fixImageUri(data.getData()).toString());
-                                        return;
-                                    } else if (!uri.toString().startsWith("content://com.google.android.apps.photos.contentprovider")) {
-                                        task.success(ForgeFile.fixImageUri(data.getData()).toString());
-                                        return;
-                                    }
-                                    // If this file comes from Google Photos we to need to cache it locally
-                                    // as Marshmallow's braindead permissions model won't let it be used
-                                    // Crosswalk.
-                                    String filename = "temp_forge_file_image_" + (new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()));
-                                    File output = null;
-                                    try {
-                                        output = File.createTempFile(filename, "");
-                                        FileInputStream input = (FileInputStream) ForgeApp.getActivity().getContentResolver().openInputStream(uri);
-                                        FileChannel src = input.getChannel();
-                                        FileChannel dst = new FileOutputStream(output).getChannel();
-                                        dst.transferFrom(src, 0, src.size());
-                                        src.close();
-                                        dst.close();
-                                        task.success(Uri.fromFile(output).toString());
-                                    } catch (IOException e) {
-                                        task.error("Error retrieving video: " + e.getLocalizedMessage(), "UNEXPECTED_FAILURE", null);
-                                    }
-
+                                    task.success(ForgeFile.fixImageUri(uri).toString());
                                 } else if (resultCode == RESULT_CANCELED) {
                                     task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
                                 } else {
