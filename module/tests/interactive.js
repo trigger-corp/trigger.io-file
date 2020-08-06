@@ -29,36 +29,6 @@ asyncTest("Select image from gallery and check file info", 2, function() {
 
 
 
-if (forge.is.ios()) {
-    asyncTest("Select a video with low quality and check file info", 2, function() {
-        var runTest = function () {
-            forge.file.getVideo({
-                source: "gallery",
-                videoQuality: "low"
-            }, function (file) {
-                forge.file.info(file, function (info) {
-                    ok(true, "file.info claims success");
-                    askQuestion("Is the file size smaller: " +
-                                JSON.stringify(info), {
-                                    Yes: function () {
-                                        ok(true, "File information is correct");
-                                        start();
-                                    },
-                                    No: function () {
-                                        ok(false, "User claims failure");
-                                        start();
-                                    }
-                                });
-                }, function (e) {
-                    ok(false, "API call failure: " + e.message);
-                    start();
-                });
-            });
-        };
-        askQuestion("When prompted select the video you recorded from the gallery", { Ok: runTest });
-    });
-}
-
 
 asyncTest("Embedding video in webview", 1, function() {
     forge.file.getVideo({
