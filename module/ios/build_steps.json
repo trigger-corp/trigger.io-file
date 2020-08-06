@@ -1,5 +1,5 @@
 [
-    { "do": { "add_ios_system_framework": "MobileCoreServices.framework" } },
+    { "do": { "add_ios_system_framework": "CoreServices.framework" } },
     { "do": { "add_ios_system_framework": "Photos.framework" } },
     { "do": { "set_in_info_plist": {
         "key": "NSPhotoLibraryUsageDescription",
