@@ -6,7 +6,7 @@
 //  Copyright (c) 2012 Trigger Corp. All rights reserved.
 //
 
-#import <MobileCoreServices/UTCoreTypes.h>
+#import <CoreServices/UTCoreTypes.h>
 #import <ForgeCore/UIActionSheet+UIAlertInView.h>
 
 #import "JLPhotosPermission.h"

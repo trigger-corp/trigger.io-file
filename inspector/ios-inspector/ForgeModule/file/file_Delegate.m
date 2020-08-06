@@ -10,7 +10,7 @@
 #import "file_UIImagePickerControllerViewController.h"
 #import "file_Util.h"
 
-#import <MobileCoreServices/UTCoreTypes.h>
+#import <CoreServices/UTCoreTypes.h>
 #import <Photos/Photos.h>
 
 @implementation file_Delegate

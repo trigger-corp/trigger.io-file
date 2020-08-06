@@ -103,16 +103,16 @@
       [library enumerateGroupsWithTypes:ALAssetsGroupAll
           usingBlock:^(ALAssetsGroup *assetGroup, BOOL *stop) {
             if (*stop) {
-              if (_completion) {
-                _completion(true, nil);
+                if (self->_completion) {
+                  self->_completion(true, nil);
               }
             } else {
               *stop = YES;
             }
           }
           failureBlock:^(NSError *error) {
-            if (_completion) {
-              _completion(false, [self systemDeniedError:error]);
+          if (self->_completion) {
+                self->_completion(false, [self systemDeniedError:error]);
             }
           }];
     } break;

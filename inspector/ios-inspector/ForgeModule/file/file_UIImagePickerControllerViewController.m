@@ -32,16 +32,9 @@
 	[(file_Delegate*)self.delegate didDisappear];
 }
 
-- (void)viewDidUnload {
-    [super viewDidUnload];
-}
-
+// TODO deprecate
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
     return YES;
-}
-
--(UIViewController *)childViewControllerForStatusBarHidden {
-	return nil;
 }
 
 -(BOOL)prefersStatusBarHidden {
