@@ -9,126 +9,153 @@
 
 #import <ForgeCore/JLPermissionsCore+Internal.h>
 
-#import <AssetsLibrary/AssetsLibrary.h>
+#import <Photos/Photos.h>
 
 @implementation JLPhotosPermission {
-  AuthorizationHandler _completion;
+    AuthorizationHandler _completion;
 }
+
 
 + (instancetype)sharedInstance {
-  static JLPhotosPermission *_instance = nil;
-  static dispatch_once_t onceToken;
+    static JLPhotosPermission *_instance = nil;
+    static dispatch_once_t onceToken;
 
-  dispatch_once(&onceToken, ^{
-    _instance = [[JLPhotosPermission alloc] init];
-  });
+    dispatch_once(&onceToken, ^{
+        _instance = [[JLPhotosPermission alloc] init];
+    });
 
-  return _instance;
+    return _instance;
 }
+
 
 #pragma mark - Photos
 
-- (JLAuthorizationStatus)authorizationStatus {
-  ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-  switch (status) {
-    case ALAuthorizationStatusAuthorized:
-      return JLPermissionAuthorized;
-    case ALAuthorizationStatusNotDetermined:
-      return JLPermissionNotDetermined;
-    case ALAuthorizationStatusRestricted:
-    case ALAuthorizationStatusDenied:
-      return JLPermissionDenied;
-  }
+static PHAuthorizationStatus _authorizationStatusCompat() {
+    PHAuthorizationStatus status;
+    if (@available(iOS 14, *)) {
+        status = [PHPhotoLibrary authorizationStatusForAccessLevel:PHAccessLevelReadWrite];
+    } else {
+        status = [PHPhotoLibrary authorizationStatus];
+    }
+    return status;
 }
 
-- (void)authorize:(AuthorizationHandler)completion {
-  [self authorizeWithTitle:[self defaultTitle:@"Photos"]
-                   message:[self defaultMessage]
-               cancelTitle:[self defaultCancelTitle]
-                grantTitle:[self defaultGrantTitle]
-                completion:completion];
+
+- (JLAuthorizationStatus)authorizationStatus {
+    PHAuthorizationStatus status = _authorizationStatusCompat();
+    switch (status) {
+        case PHAuthorizationStatusAuthorized:
+            return JLPermissionAuthorized;
+        case PHAuthorizationStatusNotDetermined:
+            return JLPermissionNotDetermined;
+        case PHAuthorizationStatusDenied:
+        case PHAuthorizationStatusLimited:
+        case PHAuthorizationStatusRestricted:
+            return JLPermissionDenied;
+    }
 }
+
+
+- (void)authorize:(AuthorizationHandler)completion {
+    [self authorizeWithTitle:[self defaultTitle:@"Photos"]
+                     message:[self defaultMessage]
+                 cancelTitle:[self defaultCancelTitle]
+                  grantTitle:[self defaultGrantTitle]
+                  completion:completion];
+}
+
 
 - (void)authorizeWithTitle:(NSString *)messageTitle
                    message:(NSString *)message
                cancelTitle:(NSString *)cancelTitle
                 grantTitle:(NSString *)grantTitle
                 completion:(AuthorizationHandler)completion {
-  ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-  switch (status) {
-    case ALAuthorizationStatusAuthorized:
-      if (completion) {
-        completion(true, nil);
-      }
-      break;
-    case ALAuthorizationStatusNotDetermined: {
-      _completion = completion;
-      if (self.isExtraAlertEnabled) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:messageTitle
-                                                        message:message
-                                                       delegate:self
-                                              cancelButtonTitle:cancelTitle
-                                              otherButtonTitles:grantTitle, nil];
-        dispatch_async(dispatch_get_main_queue(), ^{
-          [alert show];
-        });
-      } else {
-        [self actuallyAuthorize];
-      }
-    } break;
-    case ALAuthorizationStatusRestricted:
-    case ALAuthorizationStatusDenied: {
-      if (completion) {
-        completion(false, [self previouslyDeniedError]);
-      }
-    } break;
-  }
+
+    PHAuthorizationStatus status = _authorizationStatusCompat();
+    switch (status) {
+        case PHAuthorizationStatusAuthorized:
+            if (completion) {
+                completion(true, nil);
+            }
+            break;
+
+        case PHAuthorizationStatusNotDetermined: {
+            _completion = completion;
+            if (self.isExtraAlertEnabled) {
+                UIAlertController *alert =
+                [UIAlertController alertControllerWithTitle:messageTitle
+                                                    message:message
+                                             preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:cancelTitle
+                                                          style:UIAlertActionStyleCancel
+                                                        handler:^(UIAlertAction * _Nonnull action) {
+                    if (self->_completion) {
+                        self->_completion(false, nil);
+                    }
+                }]];
+                [alert addAction:[UIAlertAction actionWithTitle:grantTitle
+                                                          style:UIAlertActionStyleDefault
+                                                        handler:^(UIAlertAction * _Nonnull action) {
+                    [self actuallyAuthorize];
+                }]];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[[ForgeApp sharedApp] viewController] presentViewController:alert animated:YES completion:nil];
+                });
+            } else {
+                [self actuallyAuthorize];
+            }
+        } break;
+
+        case PHAuthorizationStatusDenied:
+        case PHAuthorizationStatusLimited:
+        case PHAuthorizationStatusRestricted: {
+            if (completion) {
+                completion(false, [self previouslyDeniedError]);
+            }
+        } break;
+    }
 }
+
 
 - (JLPermissionType)permissionType {
-  return JLPermissionPhotos;
+    return JLPermissionPhotos;
 }
+
 
 - (void)actuallyAuthorize {
-  ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-  switch (status) {
-    case ALAuthorizationStatusAuthorized:
-      if (_completion) {
-        _completion(true, nil);
-      }
-      break;
-    case ALAuthorizationStatusNotDetermined: {
-      ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
+    PHAuthorizationStatus status = _authorizationStatusCompat();
+    switch (status) {
+        case PHAuthorizationStatusAuthorized:
+            if (_completion) {
+                _completion(true, nil);
+            }
+            break;
 
-      [library enumerateGroupsWithTypes:ALAssetsGroupAll
-          usingBlock:^(ALAssetsGroup *assetGroup, BOOL *stop) {
-            if (*stop) {
-                if (self->_completion) {
-                  self->_completion(true, nil);
-              }
-            } else {
-              *stop = YES;
+        case PHAuthorizationStatusNotDetermined: {
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                if (status == PHAuthorizationStatusAuthorized) {
+                    self->_completion(true, nil);
+                } else {
+                    self->_completion(false, [self systemDeniedError:nil]);
+                }
+            }];
+        } break;
+
+        case PHAuthorizationStatusDenied:
+        case PHAuthorizationStatusLimited:
+        case PHAuthorizationStatusRestricted: {
+            if (_completion) {
+                _completion(false, [self previouslyDeniedError]);
             }
-          }
-          failureBlock:^(NSError *error) {
-          if (self->_completion) {
-                self->_completion(false, [self systemDeniedError:error]);
-            }
-          }];
-    } break;
-    case ALAuthorizationStatusRestricted:
-    case ALAuthorizationStatusDenied: {
-      if (_completion) {
-        _completion(false, [self previouslyDeniedError]);
-      }
-    } break;
-  }
+        } break;
+    }
 }
 
+
 - (void)canceledAuthorization:(NSError *)error {
-  if (_completion) {
-    _completion(false, error);
-  }
+    if (_completion) {
+        _completion(false, error);
+    }
 }
 
 @end
