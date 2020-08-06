@@ -2,6 +2,69 @@
 
 module("forge.file");
 
+
+// permissions module native code has to be baked into the file module to avoid app store rejections
+if (forge.is.ios()) {
+    if (!forge.permissions) {
+        forge.permissions = {
+            check: function (permission, success, error) {
+                forge.internal.call("file.permissions_check", {
+                    permission: "ios.permission.photos"
+                }, success, error);
+
+            },
+            request: function (permission, rationale, success, error) {
+                forge.internal.call("file.permissions_request", {
+                    permission: "ios.permission.photos",
+                    rationale: rationale
+                }, success, error);
+            },
+            photos: {
+                "read": "photos_read"
+            }
+        };
+    }
+
+    var rationale = "Can haz fileburger?";
+
+    asyncTest("File permission request denied.", 1, function() {
+        var runTest = function() {
+            forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
+                if (!allowed) {
+                    ok(true, "Permission request denied.");
+                    start();
+                } else {
+                    ok(false, "Permission request was allowed. Expected permission denied.");
+                    start();
+                }
+            }, function () {
+                ok(false, "API method returned failure");
+                start();
+            });
+        };
+        askQuestion("When prompted, deny the permission request", { Ok: runTest });
+    });
+
+    asyncTest("File permission request allowed.", 1, function() {
+        var runTest = function() {
+            forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
+                if (allowed) {
+                    ok(true, "Permission request allowed.");
+                    start();
+                } else {
+                    ok(false, "Permission request was denied. Expected permission allowed.");
+                    start();
+                }
+            }, function () {
+                ok(false, "API method returned failure");
+                start();
+            });
+        };
+        askQuestion("When prompted, allow the permission request", { Ok: runTest });
+    });
+}
+
+
 asyncTest("Select image from gallery and check file info", 2, function() {
     var runTest = function () {
         forge.file.getImage(function (file) {
