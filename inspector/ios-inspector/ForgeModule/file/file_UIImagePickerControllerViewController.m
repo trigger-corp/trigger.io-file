@@ -32,8 +32,7 @@
 	[(file_Delegate*)self.delegate didDisappear];
 }
 
-// TODO deprecate
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+- (BOOL)shouldAutorotate {
     return YES;
 }
 
