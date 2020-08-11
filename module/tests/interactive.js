@@ -42,7 +42,15 @@ if (forge.is.ios()) {
                 start();
             });
         };
-        askQuestion("When prompted, deny the permission request", { Ok: runTest });
+        forge.permissions.check(forge.permissions.photos.read, function (allowed) {
+            if (allowed) {
+                ok(true, "Already have permission");
+                start();
+            } else {
+                askQuestion("When prompted, deny the permission request", { Ok: runTest });
+            }
+        });
+
     });
 
     asyncTest("File permission request allowed.", 1, function() {
@@ -60,7 +68,7 @@ if (forge.is.ios()) {
                 start();
             });
         };
-        askQuestion("When prompted, allow the permission request", { Ok: runTest });
+        askQuestion("If prompted, allow the permission request", { Ok: runTest });
     });
 }
 
