@@ -42,16 +42,7 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     didReturn = YES;
     [self closePicker:^{
-        PHAsset *asset = nil;
-        if (@available(iOS 11_0, *)) {
-           asset = [info objectForKey:UIImagePickerControllerPHAsset];
-        } else {
-            NSURL *referenceURL = [info objectForKey:UIImagePickerControllerReferenceURL];
-            PHFetchResult *assetResult = [PHAsset fetchAssetsWithALAssetURLs:@[referenceURL] options:nil];
-            if ([assetResult count] >= 1) {
-                asset = [assetResult firstObject];
-            }
-        }
+        PHAsset *asset = [info objectForKey:UIImagePickerControllerPHAsset];    
         if (asset == nil) {
             [self->task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
             return;
