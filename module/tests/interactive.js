@@ -87,35 +87,37 @@ asyncTest("Select image from gallery and check file info", 2, function() {
             });
         });
     };
-    askQuestion("When prompted select a file from the gallery", { Ok: runTest });
+    askQuestion("When prompted select an image from the gallery", { Ok: runTest });
 });
 
 
 
 
 asyncTest("Embedding video in webview", 1, function() {
-    forge.file.getVideo({
-        source: "gallery",
-        videoQuality: "low"
-    }, function (file) {
-        forge.file.URL(file, function (url) {
-            askQuestion("Did your video just play: <video controls autoplay width=192 src='" + url + "'></video>", {
-                Yes: function () {
-                    ok(true, "video capture successful");
-                    start();
-                }, No: function () {
-                    ok(false, "didn't play back just-captured video");
-                    start();
-                }
+    var runTest = function () {
+        forge.file.getVideo({
+            videoQuality: "low"
+        }, function (file) {
+            forge.file.URL(file, function (url) {
+                askQuestion("Did your video just play: <video controls autoplay width=192 src='" + url + "'></video>", {
+                    Yes: function () {
+                        ok(true, "video capture successful");
+                        start();
+                    }, No: function () {
+                        ok(false, "didn't play back just-captured video");
+                        start();
+                    }
+                });
+            }, function (e) {
+                ok(false, "API call failure: "+e.message);
+                start();
             });
         }, function (e) {
             ok(false, "API call failure: "+e.message);
             start();
         });
-    }, function (e) {
-        ok(false, "API call failure: "+e.message);
-        start();
-    });
+    };
+    askQuestion("When prompted select a video from the gallery", { Ok: runTest });
 });
 
 
@@ -123,7 +125,6 @@ asyncTest("Embedding video in webview", 1, function() {
 asyncTest("Gallery", 5, function() {
     var runTest = function () {
         forge.file.getImage({
-            source: "gallery",
             width: 100,
             height: 100
         }, function (file) {
