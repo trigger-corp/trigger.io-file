@@ -12,7 +12,6 @@
 {
 	ForgeTask *task;
 	file_Delegate *me;
-	UIPopoverController *keepPopover;
 	UIImagePickerController *keepPicker;
 	id params;
 	BOOL didReturn;
@@ -20,6 +19,7 @@
 }
 
 - (file_Delegate*_Nullable) initWithTask:(ForgeTask*_Nullable)initTask andParams:(id _Nullable )initParams andType:(NSString*_Nullable)initType;
+- (void)openPicker;
 - (void)closePicker:(void (^ __nullable)(void))success;
 - (void)cancel;
 - (void)didDisappear;

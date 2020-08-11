@@ -42,7 +42,7 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     didReturn = YES;
     [self closePicker:^{
-        PHAsset *asset = [info objectForKey:UIImagePickerControllerPHAsset];    
+        PHAsset *asset = [info objectForKey:UIImagePickerControllerPHAsset];
         if (asset == nil) {
             [self->task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
             return;
@@ -86,24 +86,12 @@
 
 
 - (void)closePicker:(void (^ __nullable)(void))success {
-    if (([ForgeUtil isIpad]) && keepPicker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
-        [keepPopover dismissPopoverAnimated:YES];
+    [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
         if (success != nil) success();
-    } else {
-        [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
-            if (success != nil) success();
-        }];
-    }
+    }];
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    if (buttonIndex != 0 && buttonIndex != 1) {
-        didReturn = YES;
-        [task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
-        // "release"
-        me = nil;
-        return;
-    }
+- (void)openPicker {
     file_UIImagePickerControllerViewController *picker = [[file_UIImagePickerControllerViewController alloc] init];
     keepPicker = picker;
 
@@ -111,12 +99,7 @@
     if (@available(iOS 11_0, *)) {
         picker.imageExportPreset = UIImagePickerControllerImageURLExportPresetCompatible;
     }
-
-    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] && buttonIndex == 0) {
-        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    } else {
-        picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    }
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
 
     // Video or Photo
     picker.mediaTypes = [NSArray arrayWithObjects:type, nil];
@@ -152,13 +135,7 @@
 
 - (void) presentUIImagePickerController:(UIImagePickerController*)picker {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (([ForgeUtil isIpad]) && picker.sourceType == UIImagePickerControllerSourceTypePhotoLibrary) {
-            UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:picker];
-            self->keepPopover = popover;
-            [popover presentPopoverFromRect:CGRectMake(0.0,0.0,1.0,1.0) inView:[[ForgeApp sharedApp] viewController].view permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-        } else {
-            [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
-        }
+        [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
     });
 }
 

@@ -19,12 +19,12 @@
 
 + (void)getImage:(ForgeTask*)task source:(NSString*)source {
     file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
-    [delegate actionSheet:nil didDismissWithButtonIndex:1];
+    [delegate openPicker];
 }
 
 + (void)getVideo:(ForgeTask*)task source:(NSString*)source {
     file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
-    [delegate actionSheet:nil didDismissWithButtonIndex:1];
+    [delegate openPicker];
 }
 
 + (void)getLocal:(ForgeTask*)task name:(NSString*)name {
