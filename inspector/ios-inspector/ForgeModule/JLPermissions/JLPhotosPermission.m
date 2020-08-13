@@ -46,10 +46,10 @@ static PHAuthorizationStatus _authorizationStatusCompat() {
     switch (status) {
         case PHAuthorizationStatusAuthorized:
             return JLPermissionAuthorized;
+        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusNotDetermined:
             return JLPermissionNotDetermined;
         case PHAuthorizationStatusDenied:
-        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusRestricted:
             return JLPermissionDenied;
     }
@@ -79,9 +79,10 @@ static PHAuthorizationStatus _authorizationStatusCompat() {
             }
             break;
 
+        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusNotDetermined: {
             _completion = completion;
-            if (self.isExtraAlertEnabled) {
+            if (/* DISABLES CODE */ (NO) && self.isExtraAlertEnabled) { // TODO
                 UIAlertController *alert =
                 [UIAlertController alertControllerWithTitle:messageTitle
                                                     message:message
@@ -107,7 +108,6 @@ static PHAuthorizationStatus _authorizationStatusCompat() {
         } break;
 
         case PHAuthorizationStatusDenied:
-        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusRestricted: {
             if (completion) {
                 completion(false, [self previouslyDeniedError]);
@@ -131,6 +131,7 @@ static PHAuthorizationStatus _authorizationStatusCompat() {
             }
             break;
 
+        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusNotDetermined: {
             [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
                 if (status == PHAuthorizationStatusAuthorized) {
@@ -142,7 +143,6 @@ static PHAuthorizationStatus _authorizationStatusCompat() {
         } break;
 
         case PHAuthorizationStatusDenied:
-        case PHAuthorizationStatusLimited:
         case PHAuthorizationStatusRestricted: {
             if (_completion) {
                 _completion(false, [self previouslyDeniedError]);
