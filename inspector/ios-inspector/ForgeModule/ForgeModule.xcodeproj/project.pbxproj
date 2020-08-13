@@ -8,14 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		710471F31EADF22100876B91 /* file_EventListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 710471F21EADF22100876B91 /* file_EventListener.m */; };
+		7109351624E582F900498255 /* file_PHPickerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7109351524E582F900498255 /* file_PHPickerDelegate.m */; };
 		7148241C1FCD52CD00E8A16C /* file_Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 7148241B1FCD52CD00E8A16C /* file_Util.m */; };
 		71BDD9B8212E8F3F0075EEA3 /* JLPhotosPermission.m in Sources */ = {isa = PBXBuildFile; fileRef = 71BDD9B7212E8F3F0075EEA3 /* JLPhotosPermission.m */; };
 		B31B6D5215C13D5200854074 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B31B6D5115C13D5200854074 /* Foundation.framework */; };
 		B31B6D6F15C1467100854074 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B31B6D6E15C1467100854074 /* CoreFoundation.framework */; };
 		B37C3A5D162717A200B50A60 /* ForgeCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B37C3A5C162717A200B50A60 /* ForgeCore.framework */; };
 		B3EE023916B2F8740029452B /* file_API.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EE023416B2F8740029452B /* file_API.m */; };
-		B3EE023A16B2F8740029452B /* file_Delegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EE023616B2F8740029452B /* file_Delegate.m */; };
-		B3EE023B16B2F8740029452B /* file_UIImagePickerControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EE023816B2F8740029452B /* file_UIImagePickerControllerViewController.m */; };
+		B3EE023A16B2F8740029452B /* file_Delegate_deprecated.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EE023616B2F8740029452B /* file_Delegate_deprecated.m */; };
+		B3EE023B16B2F8740029452B /* file_UIImagePickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EE023816B2F8740029452B /* file_UIImagePickerController.m */; };
 		B3FC51F815C151E5003574D9 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3FC51F715C151E5003574D9 /* UIKit.framework */; };
 		B3FC51FF15C1523D003574D9 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3FC51FE15C1523D003574D9 /* CoreGraphics.framework */; };
 		B3FC524815C17B2C003574D9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3FC524715C17B2C003574D9 /* SystemConfiguration.framework */; };
@@ -24,6 +25,8 @@
 /* Begin PBXFileReference section */
 		710471F11EADF22100876B91 /* file_EventListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_EventListener.h; sourceTree = "<group>"; };
 		710471F21EADF22100876B91 /* file_EventListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_EventListener.m; sourceTree = "<group>"; };
+		7109351424E582F900498255 /* file_PHPickerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_PHPickerDelegate.h; sourceTree = "<group>"; };
+		7109351524E582F900498255 /* file_PHPickerDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = file_PHPickerDelegate.m; sourceTree = "<group>"; };
 		710A8BB81F160FAC00D026FF /* placeholder.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = placeholder.plist; sourceTree = "<group>"; };
 		7148241A1FCD52CD00E8A16C /* file_Util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_Util.h; sourceTree = "<group>"; };
 		7148241B1FCD52CD00E8A16C /* file_Util.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = file_Util.m; sourceTree = "<group>"; };
@@ -37,10 +40,10 @@
 		B37C3A5C162717A200B50A60 /* ForgeCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForgeCore.framework; path = ../ForgeCore.framework; sourceTree = "<group>"; };
 		B3EE023316B2F8740029452B /* file_API.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_API.h; sourceTree = "<group>"; };
 		B3EE023416B2F8740029452B /* file_API.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_API.m; sourceTree = "<group>"; };
-		B3EE023516B2F8740029452B /* file_Delegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_Delegate.h; sourceTree = "<group>"; };
-		B3EE023616B2F8740029452B /* file_Delegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_Delegate.m; sourceTree = "<group>"; };
-		B3EE023716B2F8740029452B /* file_UIImagePickerControllerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_UIImagePickerControllerViewController.h; sourceTree = "<group>"; };
-		B3EE023816B2F8740029452B /* file_UIImagePickerControllerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_UIImagePickerControllerViewController.m; sourceTree = "<group>"; };
+		B3EE023516B2F8740029452B /* file_Delegate_deprecated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_Delegate_deprecated.h; sourceTree = "<group>"; };
+		B3EE023616B2F8740029452B /* file_Delegate_deprecated.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_Delegate_deprecated.m; sourceTree = "<group>"; };
+		B3EE023716B2F8740029452B /* file_UIImagePickerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = file_UIImagePickerController.h; sourceTree = "<group>"; };
+		B3EE023816B2F8740029452B /* file_UIImagePickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_UIImagePickerController.m; sourceTree = "<group>"; };
 		B3FC51F715C151E5003574D9 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B3FC51FE15C1523D003574D9 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		B3FC524115C177EA003574D9 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
@@ -120,14 +123,16 @@
 			children = (
 				B3EE023316B2F8740029452B /* file_API.h */,
 				B3EE023416B2F8740029452B /* file_API.m */,
-				710471F11EADF22100876B91 /* file_EventListener.h */,
-				710471F21EADF22100876B91 /* file_EventListener.m */,
-				B3EE023516B2F8740029452B /* file_Delegate.h */,
-				B3EE023616B2F8740029452B /* file_Delegate.m */,
-				B3EE023716B2F8740029452B /* file_UIImagePickerControllerViewController.h */,
-				B3EE023816B2F8740029452B /* file_UIImagePickerControllerViewController.m */,
+				7109351424E582F900498255 /* file_PHPickerDelegate.h */,
+				7109351524E582F900498255 /* file_PHPickerDelegate.m */,
+				B3EE023516B2F8740029452B /* file_Delegate_deprecated.h */,
+				B3EE023616B2F8740029452B /* file_Delegate_deprecated.m */,
+				B3EE023716B2F8740029452B /* file_UIImagePickerController.h */,
+				B3EE023816B2F8740029452B /* file_UIImagePickerController.m */,
 				7148241A1FCD52CD00E8A16C /* file_Util.h */,
 				7148241B1FCD52CD00E8A16C /* file_Util.m */,
+				710471F11EADF22100876B91 /* file_EventListener.h */,
+				710471F21EADF22100876B91 /* file_EventListener.m */,
 			);
 			path = file;
 			sourceTree = "<group>";
@@ -212,10 +217,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				B3EE023916B2F8740029452B /* file_API.m in Sources */,
-				B3EE023A16B2F8740029452B /* file_Delegate.m in Sources */,
+				7109351624E582F900498255 /* file_PHPickerDelegate.m in Sources */,
+				B3EE023A16B2F8740029452B /* file_Delegate_deprecated.m in Sources */,
 				7148241C1FCD52CD00E8A16C /* file_Util.m in Sources */,
 				710471F31EADF22100876B91 /* file_EventListener.m in Sources */,
-				B3EE023B16B2F8740029452B /* file_UIImagePickerControllerViewController.m in Sources */,
+				B3EE023B16B2F8740029452B /* file_UIImagePickerController.m in Sources */,
 				71BDD9B8212E8F3F0075EEA3 /* JLPhotosPermission.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

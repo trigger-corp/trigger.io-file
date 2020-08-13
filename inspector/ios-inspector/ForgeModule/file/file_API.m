@@ -8,23 +8,37 @@
 
 #import <CoreServices/UTCoreTypes.h>
 #import <ForgeCore/UIActionSheet+UIAlertInView.h>
+#import <PhotosUI/PHPicker.h>
 
 #import "JLPhotosPermission.h"
 
 #import "file_API.h"
-#import "file_Delegate.h"
+#import "file_PHPickerDelegate.h"
+#import "file_Delegate_deprecated.h"
 
 @implementation file_API
 
 
 + (void)getImage:(ForgeTask*)task source:(NSString*)source {
-    file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
-    [delegate openPicker];
+    
+    if (@available(iOS 14, *)) {
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task filter:PHPickerFilter.imagesFilter];
+        [delegate openPicker];
+    } else {
+        file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
+        [delegate openPicker];
+    }
 }
 
 + (void)getVideo:(ForgeTask*)task source:(NSString*)source {
-    file_Delegate *delegate = [[file_Delegate alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
-    [delegate openPicker];
+    
+    if (@available(iOS 14, *)) {
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task filter:PHPickerFilter.videosFilter];
+        [delegate openPicker];
+    } else {
+        file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
+        [delegate openPicker];
+    }
 }
 
 + (void)getLocal:(ForgeTask*)task name:(NSString*)name {

@@ -11,7 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface file_PHPickerDelegate : NSObject <PHPickerViewControllerDelegate> 
+@interface file_PHPickerDelegate : NSObject <PHPickerViewControllerDelegate> {
+    file_PHPickerDelegate *me;
+}
+
++ (file_PHPickerDelegate*) withTask:(ForgeTask*)initTask filter:(PHPickerFilter*)filter API_AVAILABLE(ios(14));
 
 - (void)openPicker API_AVAILABLE(ios(14));
 - (void)closePicker:(void (^ __nullable)(void))success;

@@ -7,7 +7,7 @@
 //
 
 #import "file_UIImagePickerController.h"
-#import "file_Delegate.h"
+#import "file_Delegate_deprecated.h"
 
 @interface file_UIImagePickerController ()
 
@@ -29,7 +29,7 @@
 
 - (void) viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-	[(file_Delegate*)self.delegate didDisappear];
+	[(file_Delegate_deprecated*)self.delegate didDisappear];
 }
 
 - (BOOL)shouldAutorotate {

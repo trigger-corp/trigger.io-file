@@ -27,7 +27,7 @@ if (forge.is.ios()) {
 
     var rationale = "Can haz fileburger?";
 
-    asyncTest("File permission request denied.", 1, function() {
+    /*asyncTest("File permission request denied.", 1, function() {
         var runTest = function() {
             forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
                 if (!allowed) {
@@ -50,8 +50,7 @@ if (forge.is.ios()) {
                 askQuestion("When prompted, deny the permission request", { Ok: runTest });
             }
         });
-
-    });
+    });*/
 
     asyncTest("File permission request allowed.", 1, function() {
         var runTest = function() {
@@ -90,9 +89,12 @@ asyncTest("Select image from gallery and check file info", 2, function() {
                                 }
                             });
             }, function (e) {
-                ok(false, "API call failure: " + e.message);
+                ok(false, "forge.file.info error: " + e.message);
                 start();
             });
+        }, function (e) {
+            ok(false, "forge.file.getImage error: " + e.message);
+            start();
         });
     };
     askQuestion("When prompted select an image from the gallery", { Ok: runTest });
