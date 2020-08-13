@@ -6,14 +6,14 @@
 //  Copyright (c) 2012 Trigger Corp. All rights reserved.
 //
 
-#import "file_UIImagePickerControllerViewController.h"
+#import "file_UIImagePickerController.h"
 #import "file_Delegate.h"
 
-@interface file_UIImagePickerControllerViewController ()
+@interface file_UIImagePickerController ()
 
 @end
 
-@implementation file_UIImagePickerControllerViewController
+@implementation file_UIImagePickerController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
