@@ -9,16 +9,21 @@
 #import <Foundation/Foundation.h>
 #import <PhotosUI/PHPicker.h>
 
+#import <ForgeCore/ForgeTask.h>
+
+
 NS_ASSUME_NONNULL_BEGIN
 
-@interface file_PHPickerDelegate : NSObject <PHPickerViewControllerDelegate> {
+API_AVAILABLE(ios(14))
+@interface file_PHPickerDelegate : NSObject <PHPickerViewControllerDelegate, UIAdaptivePresentationControllerDelegate> {
     file_PHPickerDelegate *me;
+    ForgeTask *task;
+    PHPickerConfiguration *configuration;
 }
 
-+ (file_PHPickerDelegate*) withTask:(ForgeTask*)initTask filter:(PHPickerFilter*)filter API_AVAILABLE(ios(14));
++ (file_PHPickerDelegate*) withTask:(ForgeTask*)task andConfiguration:(PHPickerConfiguration*)configuration API_AVAILABLE(ios(14));
 
-- (void)openPicker API_AVAILABLE(ios(14));
-- (void)closePicker:(void (^ __nullable)(void))success;
+- (void)openPicker;
 
 @end
 
