@@ -7,7 +7,8 @@
 //
 
 #import <CoreServices/UTCoreTypes.h>
-#import <ForgeCore/UIActionSheet+UIAlertInView.h>
+
+#import <Photos/Photos.h>
 #import <PhotosUI/PHPicker.h>
 
 #import "JLPhotosPermission.h"
@@ -16,13 +17,15 @@
 #import "file_PHPickerDelegate.h"
 #import "file_Delegate_deprecated.h"
 
+
 @implementation file_API
 
-
 + (void)getImage:(ForgeTask*)task source:(NSString*)source {
-    
     if (@available(iOS 14, *)) {
-        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task filter:PHPickerFilter.imagesFilter];
+        PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
+        configuration.selectionLimit = 1;
+        configuration.filter = PHPickerFilter.imagesFilter;
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task andConfiguration:configuration];
         [delegate openPicker];
     } else {
         file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
@@ -31,9 +34,11 @@
 }
 
 + (void)getVideo:(ForgeTask*)task source:(NSString*)source {
-    
     if (@available(iOS 14, *)) {
-        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task filter:PHPickerFilter.videosFilter];
+        PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
+        configuration.selectionLimit = 1;
+        configuration.filter = [PHPickerFilter anyFilterMatchingSubfilters:@[PHPickerFilter.videosFilter, PHPickerFilter.livePhotosFilter]];
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task andConfiguration:configuration];
         [delegate openPicker];
     } else {
         file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
