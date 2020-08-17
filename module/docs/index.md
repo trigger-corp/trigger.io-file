@@ -52,12 +52,8 @@ The optional parameters can contain any combination of the following:
    display. The stored image will not be resized.
 -  ``height`` (number): As ``width`` but sets a maximum height, both ``height``
    and ``width`` can be set.
--  ``saveLocation``: By default camera photos will be saved to the
-   device photo album, with this setting they can be forced to be saved
-   within your application by using ``"file"``.
 
-Returned files will be accessible to the app as long as they exist on
-the device.
+Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
 !method: forge.file.getVideo([params], success, error)
 !param: params `object` an optional object of parameters
@@ -77,8 +73,7 @@ The optional parameters can contain any combination of the following:
 - ``videoQuality``: Sets the video quality. Valid options are: `"default"`, `"low"`, "`medium`" and `"high"`.
 - ``videoDuration``: If the user records a new video then the video duration will be limited to the given length in seconds.
 
-Returned files will be accessible to the app as long as they exist on
-the device.
+Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
 Please note that it is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it van vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for the active camera on the device.
 
