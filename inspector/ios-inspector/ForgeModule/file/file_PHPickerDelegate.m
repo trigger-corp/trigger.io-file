@@ -28,10 +28,10 @@
     return delegate;
 }
 
+
 #pragma mark methods
 
-
-- (void) openPicker { //API_AVAILABLE(ios(14)) {
+- (void) openPicker {
     PHPickerViewController *controller = [[PHPickerViewController alloc] initWithConfiguration:self->configuration];
     controller.delegate = self;
     controller.presentationController.delegate = self;
@@ -48,60 +48,7 @@
 }
 
 
-- (NSURL*)saveImageForResultSync:(PHPickerResult*)result error:(NSError**)error {
-    if (![result.itemProvider canLoadObjectOfClass:[UIImage class]]) {
-        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
-                                    code:NSItemProviderUnavailableCoercionError
-                                userInfo:@{
-            NSLocalizedDescriptionKey:@"Cannot load image data for the selected object"
-        }];
-        return nil;
-    }
-
-    __block NSURL *ret = nil;
-    __block NSError *error_tmp = nil; // avoid capturing loadObjectOfClass's NSError
-
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);  { // perform operation synchronously
-        [result.itemProvider loadObjectOfClass:([UIImage class]) completionHandler:^(UIImage* image, NSError* error) {
-            if (error != nil) {
-                error_tmp = error;
-                dispatch_semaphore_signal(semaphore);
-                return;
-            }
-            NSString *path = NSTemporaryDirectory();
-            NSString *uuid = [[NSUUID UUID] UUIDString];
-            NSString *filename = [NSString stringWithFormat:@"%@.%@", uuid, @"png"];
-            path = [path stringByAppendingPathComponent:filename];
-            [UIImagePNGRepresentation(image) writeToFile:path atomically:YES];
-            ret = [NSURL fileURLWithPath:path relativeToURL:nil];
-            dispatch_semaphore_signal(semaphore);
-        }];
-    } dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-
-    *error = error_tmp;
-    return ret;
-}
-
-
 - (void) picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
-    /*[picker dismissViewControllerAnimated:YES completion:^{
-        // TODO can obj-c do: results.compactMap(\.assetIdentifier
-        for (PHPickerResult *result in results) {
-            NSLog(@"Selected image: %@", result.assetIdentifier);
-            if (result.assetIdentifier != nil) {
-                PHFetchResult<PHAsset*> *fetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[result.assetIdentifier] options:nil];
-                PHAsset *asset = nil;
-                if ([fetchResult count] == 0) {
-                    // handle error
-                    return;
-                }
-                asset = [fetchResult firstObject];
-                NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
-                NSLog(@"Selected asset: %@ -> %@", asset, ret);
-            }
-        }
-    }];*/
-
     [picker dismissViewControllerAnimated:YES completion:^{
         if (results.count == 0) {
             [self->task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
@@ -115,18 +62,21 @@
             // TODO return this as part of the file object
             //NSString *assetIdentifier = [result.assetIdentifier stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
             //NSString *assetIdentifier = [NSString stringToHex:result.assetIdentifier];
+            //NSLog(@"Got asset with identifier: %@", result.assetIdentifier);
 
+            NSURL *url = nil;
             if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeImage.identifier]) {
-                NSURL *url = [self saveImageForResultSync:result error:&error];
-                if (error != nil) {
-                    *stop = true;
-                    return;
-                }
-                [ret addObject:[url absoluteString]];
-
-            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeAudiovisualContent.identifier]) {
-                NSLog(@"Video");
+                url = [self saveImageForResultSync:result error:&error];
+            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) { //UTTypeAudiovisualContent.identifier]) {
+                url = [self saveVideoForResultSync:result error:&error];
             }
+
+            if (error != nil) {
+                *stop = true;
+                return;
+            }
+
+            [ret addObject:[url path]];
         }];
 
         if (error != nil) {
@@ -136,17 +86,96 @@
         } else {
             [self->task success:ret.firstObject];
         }
+
         self->me = nil;
     }];
 }
 
-// how to handle returned data
-// https://developer.apple.com/documentation/foundation/nsitemprovider?language=objc
-// also try: loadFileRepresentationForTypeIdentifier, loadInPlaceFileRepresentationForTypeIdentifier
+
+#pragma mark helpers
+
+- (NSURL*)saveImageForResultSync:(PHPickerResult*)result error:(NSError**)error {
+    if (![result.itemProvider canLoadObjectOfClass:[UIImage class]]) {
+        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
+                                    code:NSItemProviderUnavailableCoercionError
+                                userInfo:@{
+            NSLocalizedDescriptionKey:@"Cannot load image data for the selected item"
+        }];
+        return nil;
+    }
+
+    __block NSURL *ret = nil;
+    __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
+        [result.itemProvider loadObjectOfClass:([UIImage class]) completionHandler:^(UIImage* image, NSError* error) {
+            if (error != nil) {
+                error_ret = error;
+
+            } else {
+                NSString *path = ForgeApp.sharedApp.temporaryDirectory.path;
+                NSString *uuid = [[NSUUID UUID] UUIDString];
+                NSString *filename = [NSString stringWithFormat:@"%@.%@", uuid, @"png"];
+                path = [path stringByAppendingPathComponent:filename];
+
+                [UIImagePNGRepresentation(image) writeToFile:path atomically:YES];
+                [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtPath:path];
+
+                // path =  [@"/tmp" stringByAppendingPathComponent:filename]; // TODO support /tmp paths in ForgeFile
+                ret = [NSURL fileURLWithPath:path relativeToURL:nil];
+            }
+
+            dispatch_semaphore_signal(semaphore);
+        }];
+    } dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+
+    *error = error_ret;
+    return ret;
+}
 
 
-// how to handle video: https://medium.com/dev-genius/the-new-photos-picker-in-ios-14-part-2-f4864b5df837
-// also see: https://github.com/aarsh518/PHPickerViewDemo
-//           https://stackoverflow.com/questions/63397033/
+- (NSURL*)saveVideoForResultSync:(PHPickerResult*)result error:(NSError**)error {
+    __block NSURL *ret = nil;
+    __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
+
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
+        [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeQuickTimeMovie.identifier completionHandler:^(NSURL * _Nullable url, NSError * _Nullable error) {
+            if (error != nil) {
+                error_ret = error;
+
+            } else {
+                NSString *path = ForgeApp.sharedApp.temporaryDirectory.path;
+                NSString *uuid = [[NSUUID UUID] UUIDString];
+                NSString *filename = [NSString stringWithFormat:@"%@.%@", uuid, @"mp4"];
+                path = [path stringByAppendingPathComponent:filename];
+
+                NSData *data = [NSData dataWithContentsOfURL:url];
+                if (data == nil) {
+                    error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
+                                                code:NSItemProviderUnavailableCoercionError
+                                            userInfo:@{
+                        NSLocalizedDescriptionKey:@"Failed to load image data for the selected item"
+                    }];
+
+                } else if (![data writeToFile:path atomically:YES]) {
+                    error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
+                                                code:NSItemProviderUnavailableCoercionError
+                                            userInfo:@{
+                        NSLocalizedDescriptionKey:@"Failed to write image data for the selected item"
+                    }];
+
+                } else {
+                    [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtPath:path];
+                    path =  [@"/tmp" stringByAppendingPathComponent:filename]; // TODO support /tmp paths in ForgeFile
+                    ret = [NSURL fileURLWithPath:path relativeToURL:nil];
+                }
+            }
+            dispatch_semaphore_signal(semaphore);
+        }];
+    } dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+
+    *error = error_ret;
+    return ret;
+}
 
 @end
