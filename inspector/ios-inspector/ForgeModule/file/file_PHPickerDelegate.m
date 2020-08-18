@@ -59,15 +59,10 @@
         __block NSError *error = nil;
 
         [results enumerateObjectsUsingBlock:^(PHPickerResult *result, NSUInteger index, BOOL *stop) {
-            // TODO return this as part of the file object
-            //NSString *assetIdentifier = [result.assetIdentifier stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]];
-            //NSString *assetIdentifier = [NSString stringToHex:result.assetIdentifier];
-            //NSLog(@"Got asset with identifier: %@", result.assetIdentifier);
-
             NSURL *url = nil;
             if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeImage.identifier]) {
                 url = [self saveImageForResultSync:result error:&error];
-            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) { //UTTypeAudiovisualContent.identifier]) {
+            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
                 url = [self saveVideoForResultSync:result error:&error];
             }
 
@@ -75,8 +70,13 @@
                 *stop = true;
                 return;
             }
+            
+            
 
-            [ret addObject:[url path]];
+            // TODO also return result.assetIdentifier as part of the file object
+            if (url != nil) {
+                [ret addObject:[url path]];
+            }
         }];
 
         if (error != nil) {
@@ -108,6 +108,9 @@
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
+        
+        // TODO handle live photos
+        
         [result.itemProvider loadObjectOfClass:([UIImage class]) completionHandler:^(UIImage* image, NSError* error) {
             if (error != nil) {
                 error_ret = error;

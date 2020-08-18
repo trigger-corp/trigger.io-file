@@ -37,7 +37,10 @@
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = 1;
-        configuration.filter = [PHPickerFilter anyFilterMatchingSubfilters:@[PHPickerFilter.videosFilter, PHPickerFilter.livePhotosFilter]];
+        configuration.filter = [PHPickerFilter anyFilterMatchingSubfilters:@[
+            PHPickerFilter.videosFilter,
+            // TODO PHPickerFilter.livePhotosFilter 
+        ]];
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task andConfiguration:configuration];
         [delegate openPicker];
     } else {
