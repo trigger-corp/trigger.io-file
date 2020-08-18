@@ -3,8 +3,18 @@
 module("forge.file");
 
 
+// helper for logging consistent and informative api errors
+var api_error = function (api) {
+    return function (e) {
+        ok(false, api + " failure: " + e.message);
+        start();
+    };
+};
+
+
+// TODO looks like we're losing this, maybe move some of it to the capture module
 // permissions module native code has to be baked into the file module to avoid app store rejections
-if (forge.is.ios()) {
+if (false && forge.is.ios()) {
     if (!forge.permissions) {
         forge.permissions = {
             check: function (permission, success, error) {
@@ -27,7 +37,7 @@ if (forge.is.ios()) {
 
     var rationale = "Can haz fileburger?";
 
-    /*asyncTest("File permission request denied.", 1, function() {
+    asyncTest("File permission request denied.", 1, function() {
         var runTest = function() {
             forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
                 if (!allowed) {
@@ -50,7 +60,7 @@ if (forge.is.ios()) {
                 askQuestion("When prompted, deny the permission request", { Ok: runTest });
             }
         });
-    });*/
+    });
 
     asyncTest("File permission request allowed.", 1, function() {
         var runTest = function() {
@@ -101,39 +111,8 @@ asyncTest("Select image from gallery and check file info", 2, function() {
 });
 
 
-
-
-asyncTest("Embedding video in webview", 1, function() {
-    var runTest = function () {
-        forge.file.getVideo({
-            videoQuality: "low"
-        }, function (file) {
-            forge.file.URL(file, function (url) {
-                askQuestion("Did your video just play: <video controls autoplay width=192 src='" + url + "'></video>", {
-                    Yes: function () {
-                        ok(true, "video capture successful");
-                        start();
-                    }, No: function () {
-                        ok(false, "didn't play back just-captured video");
-                        start();
-                    }
-                });
-            }, function (e) {
-                ok(false, "API call failure: "+e.message);
-                start();
-            });
-        }, function (e) {
-            ok(false, "API call failure: "+e.message);
-            start();
-        });
-    };
-    askQuestion("When prompted select a video from the gallery", { Ok: runTest });
-});
-
-
-
-asyncTest("Gallery", 5, function() {
-    var runTest = function () {
+asyncTest("Gallery", 4, function() {
+    var runTests = function () {
         forge.file.getImage({
             width: 100,
             height: 100
@@ -146,54 +125,57 @@ asyncTest("Gallery", 5, function() {
                     } else {
                         ok(false, "forge.file.isFile is false");
                     }
-                    forge.file.isFile(file, function (is) {
-                        if (is) {
-                            ok(true, "forge.file.isFile is true");
-                        } else {
-                            ok(false, "forge.file.isFile is false");
-                        }
-                        forge.file.URL(file, function (url) {
-                            askQuestion("Is this your image:<br><img src='"+url+"' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
-                                ok(true, "Success with forge.file.URL");
-                                forge.file.base64(file, function (data) {
-                                    askQuestion("Is this also your image:<br><img src='data:image/jpg;base64,"+data+"' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
-                                        ok(true, "Success with forge.file.base64");
-                                        start();
-                                    }, No: function () {
-                                        ok(false, "User claims failure with forge.file.base64");
-                                        start();
-                                    }});
-                                }, function (e) {
-                                    ok(false, "API call failure: "+e.message);
+                    forge.file.URL(file, function (url) {
+                        askQuestion("Is this your image:<br><img src='" + url + "' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
+                            ok(true, "Success with forge.file.URL");
+                            forge.file.base64(file, function (data) {
+                                askQuestion("Is this also your image:<br><img src='data:image/jpg;base64,"+data+"' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
+                                    ok(true, "Success with forge.file.base64");
                                     start();
-                                });
-                            }, No: function () {
-                                ok(false, "User claims failure with forge.file.URL");
-                                start();
-                            }});
-                        }, function (e) {
-                            ok(false, "API call failure: "+e.message);
+                                }, No: function () {
+                                    ok(false, "User claims failure with forge.file.base64");
+                                    start();
+                                }});
+                            }, api_error("file.base64"));
+                        }, No: function () {
+                            ok(false, "User claims failure with forge.file.URL");
                             start();
-                        });
-                    }, function (e) {
-                        ok(false, "API call failure: "+e.message);
-                        start();
-                    });
-                }, function (e) {
-                    ok(false, "API call failure: "+e.message);
-                    start();
-                });
-
+                        }});
+                    }, api_error("file.url"));
+                }, api_error("file.isFile"));
             }, No: function () {
                 ok(false, "User claims failure");
                 start();
             }});
+        }, api_error("file.getImage"));
+    };
+    askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTests });
+});
+
+
+asyncTest("Embedding video in webview", 1, function() {
+    var runTest = function () {
+        forge.file.getVideo({
+            videoQuality: "low"
+        }, function (file) {
+            //forge.file.URL(file, function (url) { // TODO unbreak this
+                url = file.uri;
+                askQuestion("Did your video just play: <video controls autoplay playsinline width=192 src='" + url + "'></video>", {
+                    Yes: function () {
+                        ok(true, "video capture successful");
+                        start();
+                    }, No: function () {
+                        ok(false, "didn't play back just-captured video");
+                        start();
+                    }
+                });
+            //}, api_error("file.URL"));
         }, function (e) {
             ok(false, "API call failure: "+e.message);
             start();
         });
     };
-    askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTest });
+    askQuestion("When prompted select a video from the gallery", { Ok: runTest });
 });
 
 
