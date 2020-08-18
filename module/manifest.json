@@ -1,5 +1,5 @@
 {
-    "changes": "* iOS 14 support\n* Android 30 support",
+    "changes": "* Support the new iOS PHPicker media picker control\n* iOS 14 support\n* Android 30 support",
     "description": "Access local files, download remote files and import files from the gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and import images from the gallery.",
     "min_platform_version": "v2.9.0",
     "namespace": "file",
