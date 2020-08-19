@@ -119,9 +119,11 @@
 }
 
 + (void)saveURL:(ForgeTask*)task url:(NSString*)url {
+    // TODO move tempfile creation code to ForgeStorage
     NSString *uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, CFUUIDCreate(NULL));
-    NSString *tempFile = [[[[NSFileManager defaultManager] applicationSupportDirectory] stringByAppendingPathComponent:uuid] stringByAppendingString:[[[[NSURL URLWithString:url] path] pathComponents] lastObject]];
+    NSString *tempFile = [[ForgeApp.sharedApp.applicationSupportDirectory.path stringByAppendingPathComponent:uuid] stringByAppendingString:[[[[NSURL URLWithString:url] path] pathComponents] lastObject]];
 
+    // TODO any reason why we're using the global queue?
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:url]];
 

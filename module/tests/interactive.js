@@ -81,6 +81,7 @@ if (false && forge.is.ios()) {
     });
 }
 
+/*
 
 asyncTest("Select image from gallery and check file info", 2, function() {
     var runTest = function () {
@@ -151,7 +152,7 @@ asyncTest("Gallery", 4, function() {
     };
     askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTests });
 });
-
+*/
 
 asyncTest("Embedding video in webview", 1, function() {
     var runTest = function () {

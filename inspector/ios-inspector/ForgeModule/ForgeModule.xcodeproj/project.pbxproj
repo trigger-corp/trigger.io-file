@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		710471F31EADF22100876B91 /* file_EventListener.m in Sources */ = {isa = PBXBuildFile; fileRef = 710471F21EADF22100876B91 /* file_EventListener.m */; };
 		7109351624E582F900498255 /* file_PHPickerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7109351524E582F900498255 /* file_PHPickerDelegate.m */; };
-		7109353124E687B500498255 /* ForgeFileSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7109352E24E687B500498255 /* ForgeFileSystem.m */; };
-		7109353224E687B500498255 /* ForgeFile_14.m in Sources */ = {isa = PBXBuildFile; fileRef = 7109352F24E687B500498255 /* ForgeFile_14.m */; };
 		7148241C1FCD52CD00E8A16C /* file_Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 7148241B1FCD52CD00E8A16C /* file_Util.m */; };
 		71BDD9B8212E8F3F0075EEA3 /* JLPhotosPermission.m in Sources */ = {isa = PBXBuildFile; fileRef = 71BDD9B7212E8F3F0075EEA3 /* JLPhotosPermission.m */; };
 		B31B6D5215C13D5200854074 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B31B6D5115C13D5200854074 /* Foundation.framework */; };
@@ -29,10 +27,6 @@
 		710471F21EADF22100876B91 /* file_EventListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = file_EventListener.m; sourceTree = "<group>"; };
 		7109351424E582F900498255 /* file_PHPickerDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_PHPickerDelegate.h; sourceTree = "<group>"; };
 		7109351524E582F900498255 /* file_PHPickerDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = file_PHPickerDelegate.m; sourceTree = "<group>"; };
-		7109352D24E687B400498255 /* ForgeFileSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ForgeFileSystem.h; path = ../../../../../platform.git/ios/ForgeCore/ForgeCore/ForgeFileSystem.h; sourceTree = "<group>"; };
-		7109352E24E687B500498255 /* ForgeFileSystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ForgeFileSystem.m; path = ../../../../../platform.git/ios/ForgeCore/ForgeCore/ForgeFileSystem.m; sourceTree = "<group>"; };
-		7109352F24E687B500498255 /* ForgeFile_14.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ForgeFile_14.m; path = ../../../../../platform.git/ios/ForgeCore/ForgeCore/ForgeFile_14.m; sourceTree = "<group>"; };
-		7109353024E687B500498255 /* ForgeFile_14.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ForgeFile_14.h; path = ../../../../../platform.git/ios/ForgeCore/ForgeCore/ForgeFile_14.h; sourceTree = "<group>"; };
 		710A8BB81F160FAC00D026FF /* placeholder.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = placeholder.plist; sourceTree = "<group>"; };
 		7148241A1FCD52CD00E8A16C /* file_Util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_Util.h; sourceTree = "<group>"; };
 		7148241B1FCD52CD00E8A16C /* file_Util.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = file_Util.m; sourceTree = "<group>"; };
@@ -80,17 +74,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		7109352724E6873D00498255 /* ForgeCore_14 */ = {
-			isa = PBXGroup;
-			children = (
-				7109353024E687B500498255 /* ForgeFile_14.h */,
-				7109352F24E687B500498255 /* ForgeFile_14.m */,
-				7109352D24E687B400498255 /* ForgeFileSystem.h */,
-				7109352E24E687B500498255 /* ForgeFileSystem.m */,
-			);
-			name = ForgeCore_14;
-			sourceTree = "<group>";
-		};
 		71BDD9B5212E8F3F0075EEA3 /* JLPermissions */ = {
 			isa = PBXGroup;
 			children = (
@@ -103,7 +86,6 @@
 		B31B6D4315C13D5200854074 = {
 			isa = PBXGroup;
 			children = (
-				7109352724E6873D00498255 /* ForgeCore_14 */,
 				71BDD9B5212E8F3F0075EEA3 /* JLPermissions */,
 				710A8BB81F160FAC00D026FF /* placeholder.plist */,
 				B3EE023216B2F8740029452B /* file */,
@@ -238,11 +220,9 @@
 				7109351624E582F900498255 /* file_PHPickerDelegate.m in Sources */,
 				B3EE023A16B2F8740029452B /* file_Delegate_deprecated.m in Sources */,
 				7148241C1FCD52CD00E8A16C /* file_Util.m in Sources */,
-				7109353124E687B500498255 /* ForgeFileSystem.m in Sources */,
 				710471F31EADF22100876B91 /* file_EventListener.m in Sources */,
 				B3EE023B16B2F8740029452B /* file_UIImagePickerController.m in Sources */,
 				71BDD9B8212E8F3F0075EEA3 /* JLPhotosPermission.m in Sources */,
-				7109353224E687B500498255 /* ForgeFile_14.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,6 +8,8 @@
 
 #import <UniformTypeIdentifiers/UTCoreTypes.h>
 #import <Photos/Photos.h>
+
+#import <ForgeCore/ForgeStorage.h>
 #import <ForgeCore/NSString+Hex.h>
 
 #import "file_PHPickerDelegate.h"
@@ -29,7 +31,7 @@
 }
 
 
-#pragma mark methods
+#pragma mark interface
 
 - (void) openPicker {
     PHPickerViewController *controller = [[PHPickerViewController alloc] initWithConfiguration:self->configuration];
@@ -71,8 +73,6 @@
                 return;
             }
             
-            
-
             // TODO also return result.assetIdentifier as part of the file object
             if (url != nil) {
                 [ret addObject:[url path]];
@@ -116,7 +116,8 @@
                 error_ret = error;
 
             } else {
-                NSString *path = ForgeApp.sharedApp.temporaryDirectory.path;
+                // TODO move tempfile creation code to ForgeStorage
+                NSString *path = ForgeStorage.temporaryDirectory.path;
                 NSString *uuid = [[NSUUID UUID] UUIDString];
                 NSString *filename = [NSString stringWithFormat:@"%@.%@", uuid, @"png"];
                 path = [path stringByAppendingPathComponent:filename];
@@ -147,7 +148,8 @@
                 error_ret = error;
 
             } else {
-                NSString *path = ForgeApp.sharedApp.temporaryDirectory.path;
+                // TODO move tempfile creation code to ForgeStorage
+                NSString *path = ForgeStorage.temporaryDirectory.path;
                 NSString *uuid = [[NSUUID UUID] UUIDString];
                 NSString *filename = [NSString stringWithFormat:@"%@.%@", uuid, @"mp4"];
                 path = [path stringByAppendingPathComponent:filename];
