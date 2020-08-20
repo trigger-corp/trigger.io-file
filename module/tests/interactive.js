@@ -81,7 +81,6 @@ if (false && forge.is.ios()) {
     });
 }
 
-/*
 
 asyncTest("Select image from gallery and check file info", 2, function() {
     var runTest = function () {
@@ -152,15 +151,14 @@ asyncTest("Gallery", 4, function() {
     };
     askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTests });
 });
-*/
+
 
 asyncTest("Embedding video in webview", 1, function() {
     var runTest = function () {
         forge.file.getVideo({
             videoQuality: "low"
         }, function (file) {
-            //forge.file.URL(file, function (url) { // TODO unbreak this
-                url = file.uri;
+            forge.file.URL(file, function (url) {
                 askQuestion("Did your video just play: <video controls autoplay playsinline width=192 src='" + url + "'></video>", {
                     Yes: function () {
                         ok(true, "video capture successful");
@@ -170,7 +168,7 @@ asyncTest("Embedding video in webview", 1, function() {
                         start();
                     }
                 });
-            //}, api_error("file.URL"));
+            }, api_error("file.URL"));
         }, function (e) {
             ok(false, "API call failure: "+e.message);
             start();

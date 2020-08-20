@@ -4,31 +4,28 @@ forge["file"] = {
     /**
      * Allow the user to select an image and give a file object representing it.
      *
-     * @param {Object} props
-     * @param {function({uri: string, name: string})=} success
+     * @param {Object} options
+     * @param {function({file: File})=} success
      * @param {function({message: string}=} error
      */
-    "getImage": function (props, success, error) {
-        if (typeof props === "function") {
+    "getImage": function (options, success, error) {
+        if (typeof options === "function") {
             error = success;
-            success = props;
-            props = {};
+            success = options;
+            options = {};
         }
-        if (!props) {
-            props = {};
+        if (!options) {
+            options = {};
         }
-        props.source = "gallery";
-        forge.internal.call("file.getImage", props, success && function (uri) {
-            var file = {
-                uri: uri,
-                name: "Image",
-                type: "image"
-            };
-            if (props.width) {
-                file.width = props.width;
+        options.source = "gallery";
+        forge.internal.call("file.getImage", options, success && function (file) {
+            // TODO file.name = "Image";
+            // TODO file.type = "image";
+            if (options.width) {
+                file.width = options.width; // TODO
             }
-            if (props.height) {
-                file.height = props.height;
+            if (options.height) {
+                file.height = options.height; // TODO
             }
             success(file);
         }, error);
@@ -37,26 +34,23 @@ forge["file"] = {
     /**
      * Allow the user to select a video and give a file object representing it.
      *
-     * @param {Object} props
-     * @param {function({uri: string, name: string})=} success
+     * @param {Object} options
+     * @param {function({file: File})=} success
      * @param {function({message: string}=} error
      */
-    "getVideo": function (props, success, error) {
-        if (typeof props === "function") {
+    "getVideo": function (options, success, error) {
+        if (typeof options === "function") {
             error = success;
-            success = props;
-            props = {};
+            success = options;
+            options = {};
         }
-        if (!props) {
-            props = {};
+        if (!options) {
+            options = {};
         }
-        props.source = "gallery";
-        forge.internal.call("file.getVideo", props, success && function (uri) {
-            var file = {
-                uri: uri,
-                name: "Video",
-                type: "video"
-            };
+        options.source = "gallery";
+        forge.internal.call("file.getVideo", options, success && function (file) {
+            // TODO file.name = "Video";
+            // TODO file.type = "video";
             success(file);
         }, error);
     },
@@ -111,29 +105,26 @@ forge["file"] = {
      * URL must be useable in the current scope of the code, may return a base64 data: URI.
      *
      * @param {{uri: string, name: string}} file
-     * @param {Object} props
+     * @param {Object} options
      * @param {function(string)=} success
      * @param {function({message: string}=} error
      */
-    "URL": function (file, props, success, error) {
-        if (typeof props === "function") {
+    "URL": function (file, options, success, error) {
+        if (typeof options === "function") {
             error = success;
-            success = props;
+            success = options;
         }
         // Avoid mutating original file
         var newFile = {};
         for (var prop in file) {
             newFile[prop] = file[prop];
         }
-        newFile.height = props.height || file.height || undefined;
-        newFile.width = props.width || file.width || undefined;
-        if (forge.flags.android_disable_httpd === true || forge.flags.ios_disable_httpd === true) {
-            forge.internal.call("file.URL", newFile, success, error);
-        } else {
-            forge.internal.call("file.URL", newFile, function (url) {
-                success(forge.httpd.normalize(url));
-            }, error);
-        }
+        newFile.height = options.height || file.height || undefined;
+        newFile.width = options.width || file.width || undefined;
+
+        forge.internal.call("file.URL", newFile, function (url) {
+            success(forge.httpd.normalize(url));
+        }, error);
     },
 
     /**
