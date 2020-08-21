@@ -25,8 +25,7 @@
         params = initParams;
         didReturn = NO;
         type = initType;
-        // "retain"
-        me = self;
+        me = self; // "retain"
     }
     return self;
 }
@@ -44,9 +43,8 @@
 }
 
 - (void) didDisappear {
-    [self cancel];
-    // "release"
-    me = nil;
+    [self cancel];    
+    me = nil; // "release"
 }
 
 

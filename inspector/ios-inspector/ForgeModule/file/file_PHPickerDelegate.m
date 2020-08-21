@@ -116,7 +116,7 @@
                 error_ret = error;
 
             } else {
-                NSString *filename = [ForgeStorage.sharedStorage temporaryFileNameWithExtension:@"jpg"];
+                NSString *filename = [ForgeStorage temporaryFileNameWithExtension:@"jpg"];
                 NSURL *url = [ForgeStorage.temporaryDirectory URLByAppendingPathComponent:filename];
 
                 [UIImageJPEGRepresentation(image, 0.9) writeToURL:url atomically:YES];
@@ -130,7 +130,7 @@
 
                     @"_url": url.absoluteString,
                     @"_ios_assetIdentifier": result.assetIdentifier,
-                    @"uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
+                    @"_uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
                 };
             }
             dispatch_semaphore_signal(semaphore);
@@ -156,7 +156,7 @@
                 if (extension == nil) {
                     extension = @"mp4";
                 }
-                NSString *filename = [ForgeStorage.sharedStorage temporaryFileNameWithExtension:extension];
+                NSString *filename = [ForgeStorage temporaryFileNameWithExtension:extension];
                 NSURL *url = [ForgeStorage.temporaryDirectory URLByAppendingPathComponent:filename];
 
                 NSData *data = [NSData dataWithContentsOfURL:result_url];
@@ -184,7 +184,7 @@
 
                         @"_url": url.absoluteString,
                         @"_ios_assetIdentifier": result.assetIdentifier,
-                        @"uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
+                        @"_uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
                     };
                 }
             }
