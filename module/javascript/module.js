@@ -4,8 +4,8 @@ forge["file"] = {
     /**
      * Allow the user to select an image and give a file object representing it.
      *
-     * @param {Object} options
-     * @param {function({file: File})=} success
+     * @param {{width: number, height: number}} options
+     * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
     "getImage": function (options, success, error) {
@@ -19,14 +19,6 @@ forge["file"] = {
         }
         options.source = "gallery";
         forge.internal.call("file.getImage", options, success && function (file) {
-            // TODO file.name = "Image";
-            // TODO file.type = "image";
-            if (options.width) {
-                file.width = options.width; // TODO
-            }
-            if (options.height) {
-                file.height = options.height; // TODO
-            }
             success(file);
         }, error);
     },
@@ -34,8 +26,8 @@ forge["file"] = {
     /**
      * Allow the user to select a video and give a file object representing it.
      *
-     * @param {Object} options
-     * @param {function({file: File})=} success
+     * @param {{"quality": string}} options
+     * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
     "getVideo": function (options, success, error) {
@@ -49,54 +41,47 @@ forge["file"] = {
         }
         options.source = "gallery";
         forge.internal.call("file.getVideo", options, success && function (file) {
-            // TODO file.name = "Video";
-            // TODO file.type = "video";
             success(file);
         }, error);
     },
 
     /**
-     * Get file object for a local file.
-     *
-     * @param {string} name
-     * @param {function(string)=} success
-     * @param {function({message: string}=} error
-     */
-    "getLocal": function (path, success, error) {
-        forge.internal.call("file.getLocal", {name: path}, success, error);
-    },
-
-    /**
      * Returns file information
      *
-     * @param {{uri: string, name: string}} file
+     * @param {file: File} file
      * @param {function(object)=} success
      * @param {function({message: string}=} error
      */
     "info": function (file, success, error) {
-        forge.internal.call("file.info", file, success, error);
+        forge.internal.call("file.info", {
+            file: file
+        }, success, error);
     },
 
     /**
      * Get the base64 value for a files contents.
      *
-     * @param {{uri: string, name: string}} file
-     * @param {function(string)=} success
+     * @param {file: File} file
+     * @param {function(base64: string)=} success
      * @param {function({message: string}=} error
      */
     "base64": function (file, success, error) {
-        forge.internal.call("file.base64", file, success, error);
+        forge.internal.call("file.base64", {
+            file: file
+        }, success, error);
     },
 
     /**
      * Get the string value for a files contents.
      *
-     * @param {{uri: string, name: string}} file
-     * @param {function(string)=} success
+     * @param {file: File} file
+     * @param {function(contents: string)=} success
      * @param {function({message: string}=} error
      */
     "string": function (file, success, error) {
-        forge.internal.call("file.string", file, success, error);
+        forge.internal.call("file.string", {
+            file: file
+        }, success, error);
     },
 
     /**
@@ -104,76 +89,107 @@ forge["file"] = {
      *
      * URL must be useable in the current scope of the code, may return a base64 data: URI.
      *
-     * @param {{uri: string, name: string}} file
-     * @param {Object} options
-     * @param {function(string)=} success
+     * @param {file: File} file
+     * @param {object} options TODO deprecate
+     * @param {function(url: string)=} success
      * @param {function({message: string}=} error
      */
+    // TODO either deprecate this or rename it to something like getEmbeddableImageURL
     "URL": function (file, options, success, error) {
         if (typeof options === "function") {
             error = success;
             success = options;
         }
-        // Avoid mutating original file
+        // TODO deprecated update docs Avoid mutating original file
         var newFile = {};
         for (var prop in file) {
             newFile[prop] = file[prop];
         }
         newFile.height = options.height || file.height || undefined;
         newFile.width = options.width || file.width || undefined;
-
-        forge.internal.call("file.URL", newFile, function (url) {
-            success(forge.httpd.normalize(url));
+        forge.internal.call("file.URL", {
+            file: newFile
+        }, function (url) {
+            // TODO check success(forge.httpd.normalize(url));
+            success(url);
         }, error);
     },
 
     /**
      * Check a file object represents a file which exists.
      *
-     * @param {{uri: string, name: string}} file
+     * @param {file: File} file
      * @param {function(boolean)=} success
      * @param {function({message: string}=} error
      */
     "isFile": function (file, success, error) {
-        if (!file || !("uri" in file)) {
+        if (!file) {
             success(false);
         } else {
-            forge.internal.call("file.isFile", file, success, error);
+            forge.internal.call("file.isFile", {
+                file: file
+            }, success, error);
         }
+    },
+
+    /**
+     * Delete a file.
+     *
+     * @param {file: File} file
+     * @param {function()=} success
+     * @param {function({message: string}=} error
+     */
+    "remove": function (file, success, error) {
+        forge.internal.call("file.remove", {
+            file: file
+        }, success, error);
+    },
+
+
+    /**
+     * Download and cache a URL, return the file object representing cached file.
+     *
+     * @param {string} URL
+     * @param {function(file: File)=} success
+     * @param {function({message: string}=} error
+     */
+    "cacheURL": function (url, success, error) {
+        forge.internal.call("file.cacheURL", {
+            url: url
+        }, success && function (file) {
+            success(file);
+        }, error);
     },
 
     /**
      * Download and save a URL, return the file object representing saved file.
      *
      * @param {string} URL
-     * @param {function({uri: string})=} success
+     * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
-    "cacheURL": function (url, success, error) {
-        forge.internal.call("file.cacheURL", { url: url }, success && function (uri) {
-            success({
-                uri: uri
-            });
-        }, error);
-    },
     "saveURL": function (url, success, error) {
-        forge.internal.call("file.saveURL", { url: url }, success && function (uri) {
-            success({
-                uri: uri
-            });
+        forge.internal.call("file.saveURL", {
+            url: url
+        }, success && function (file) {
+            success(file);
         }, error);
     },
 
+
     /**
-     * Delete a file.
+     * Get file object for a local path.
      *
-     * @param {{uri: string} file
-     * @param {function()=} success
+     * @param {string} name
+     * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
-    "remove": function (file, success, error) {
-        forge.internal.call("file.remove", file, success, error);
+    "getLocal": function (path, success, error) {
+        forge.internal.call("file.getLocal", {
+            path: path
+        }, success, error);
     },
+
 
     /**
      * Delete all cached files

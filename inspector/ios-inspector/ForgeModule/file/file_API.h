@@ -10,16 +10,19 @@
 
 @interface file_API : NSObject
 
-+ (void)getImage:(ForgeTask*)task source:(NSString*)source;
-+ (void)getVideo:(ForgeTask*)task source:(NSString*)source;
-+ (void)getLocal:(ForgeTask*)task name:(NSString*)name;
-+ (void)URL:(ForgeTask*)task;
-+ (void)isFile:(ForgeTask*)task;
-+ (void)info:(ForgeTask*)task;
-+ (void)base64:(ForgeTask*)task;
-+ (void)string:(ForgeTask*)task;
++ (void)getImage:(ForgeTask*)task /*source:(NSString*)source*/;
++ (void)getVideo:(ForgeTask*)task /*source:(NSString*)source*/;
+
++ (void)getLocal:(ForgeTask*)task name:(NSString*)path; // TODO deprecate in favour of getLocalWithRoute ?
+
++ (void)URL:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)isFile:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)info:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)base64:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)string:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)url;
-+ (void)remove:(ForgeTask*)task;
++ (void)remove:(ForgeTask*)task file:(NSDictionary*)file;
+
 + (void)clearCache:(ForgeTask*)task;
 + (void)getStorageInformation:(ForgeTask*)task;
 
