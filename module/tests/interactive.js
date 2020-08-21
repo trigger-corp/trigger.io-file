@@ -126,10 +126,14 @@ asyncTest("Gallery", 4, function() {
                         ok(false, "forge.file.isFile is false");
                     }
                     forge.file.URL(file, function (url) {
-                        askQuestion("Is this your image:<br><img src='" + url + "' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
+                        askQuestion("Is this your image:<br><img src='" +
+                                    url +
+                                    "' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
                             ok(true, "Success with forge.file.URL");
                             forge.file.base64(file, function (data) {
-                                askQuestion("Is this also your image:<br><img src='data:image/jpg;base64,"+data+"' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
+                                askQuestion("Is this also your image:<br><img src='data:image/jpg;base64," +
+                                            data +
+                                            "' style='max-width:100px; max-height:100px'>", { Yes: function () {
                                     ok(true, "Success with forge.file.base64");
                                     start();
                                 }, No: function () {

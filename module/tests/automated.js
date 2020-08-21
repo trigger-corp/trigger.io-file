@@ -12,8 +12,17 @@ asyncTest("Local file to string (index.html)", 1, function() {
     });
 });
 
-asyncTest("Cache file and get string content", 1, function() {
+asyncTest("Cache url and get string content", 1, function() {
     forge.file.cacheURL("https://ops.trigger.io/75d92dce/tests/blank.html", function (file) {
+        forge.file.string(file, function (data) {
+            equal(data, "<html>Hello</html>\n", "Check file contents");
+            start();
+        });
+    });
+});
+
+asyncTest("Save url and get string content", 1, function() {
+    forge.file.saveURL("https://ops.trigger.io/75d92dce/tests/blank.html", function (file) {
         forge.file.string(file, function (data) {
             equal(data, "<html>Hello</html>\n", "Check file contents");
             start();
@@ -33,7 +42,7 @@ asyncTest("Get local file and check file info", 1, function() {
     });
 });
 
-asyncTest("Cache file and check file info", 1, function() {
+asyncTest("Cache url and check file info", 1, function() {
     forge.file.cacheURL("https://ops.trigger.io/75d92dce/tests/metadata_test.jpg", function (file) {
         forge.file.info(file, function (info) {
             equal(info.size, 33439);
