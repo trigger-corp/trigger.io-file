@@ -116,17 +116,18 @@
                 error_ret = error;
 
             } else {
+                // TODO use [ForgeStorage url]
                 NSString *filename = [ForgeStorage temporaryFileNameWithExtension:@"jpg"];
-                NSURL *url = [ForgeStorage.temporaryDirectory URLByAppendingPathComponent:filename];
+                NSURL *url = [ForgeStorage.Directories.Temporary URLByAppendingPathComponent:filename];
 
                 [UIImageJPEGRepresentation(image, 0.9) writeToURL:url atomically:YES];
                 [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:url];
 
                 ret = @{
                     @"mimetype": @"image/jpg",
-                    @"route": ForgeStorage.temporaryRoute,
-                    @"filename": filename,
-                    @"path": [ForgeStorage.temporaryRoute stringByAppendingPathComponent:filename],
+                    @"endpoint": ForgeStorage.Endpoints.Temporary,
+                    @"resource": filename,
+                    @"path": [ForgeStorage.Endpoints.Temporary stringByAppendingPathComponent:filename],
 
                     @"_url": url.absoluteString,
                     @"_ios_assetIdentifier": result.assetIdentifier,
@@ -157,7 +158,7 @@
                     extension = @"mp4";
                 }
                 NSString *filename = [ForgeStorage temporaryFileNameWithExtension:extension];
-                NSURL *url = [ForgeStorage.temporaryDirectory URLByAppendingPathComponent:filename];
+                NSURL *url = [ForgeStorage.Directories.Temporary URLByAppendingPathComponent:filename];
 
                 NSData *data = [NSData dataWithContentsOfURL:result_url];
                 if (data == nil) {
@@ -178,9 +179,9 @@
                     [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:url];
                     ret = @{
                         @"mimetype": [NSString stringWithFormat:@"video/%@", extension],
-                        @"route": ForgeStorage.temporaryRoute,
-                        @"filename": filename,
-                        @"path": [ForgeStorage.temporaryRoute stringByAppendingPathComponent:filename],
+                        @"endpoint": ForgeStorage.Endpoints.Temporary,
+                        @"resource": filename,
+                        @"path": [ForgeStorage.Endpoints.Temporary stringByAppendingPathComponent:filename],
 
                         @"_url": url.absoluteString,
                         @"_ios_assetIdentifier": result.assetIdentifier,

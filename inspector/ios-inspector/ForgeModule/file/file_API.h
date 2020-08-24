@@ -26,6 +26,4 @@
 + (void)clearCache:(ForgeTask*)task;
 + (void)getStorageInformation:(ForgeTask*)task;
 
-+ (NSNumber*)getDirectorySize:(NSString *)path;
-
 @end

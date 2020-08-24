@@ -56,38 +56,53 @@
 
 #pragma mark operations on File objects
 
+// TODO rename to scriptPath
 + (void)URL:(ForgeTask*)task file:(NSDictionary*)file {
-    [task success:[[[ForgeFile alloc] initWithForgeFile:file] url]];
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
+    }
+    
+    [task success:[ForgeStorage scriptPath:forgeFile]];
 }
 
+
 + (void)isFile:(ForgeTask*)task file:(NSDictionary*)file {
-    [[[ForgeFile alloc] initWithForgeFile:file] exists:^(BOOL exists) {
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
+    }
+    
+    [forgeFile exists:^(BOOL exists) {
         [task success:[NSNumber numberWithBool:exists]];
     }];
 }
 
+
 + (void)info:(ForgeTask*)task file:(NSDictionary*)file {
-    // TODO validate this via ForgeFile construction rather
-    if (![file objectForKey:@"path"] || [file objectForKey:@"path"] == [NSNull null]) {
-        [task error:@"Invalid file object passed to file.info, missing path property." type:@"BAD_INPUT" subtype:nil];
-        return;
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
 
-    [[[ForgeFile alloc] initWithForgeFile:file] info:^(NSDictionary *info) {
+    [forgeFile info:^(NSDictionary* info) {
         [task success:info];
-    } errorBlock:^(NSString *description) {
+    } errorBlock:^(NSString* description) {
         [task error:description type:@"UNEXPECTED_FAILURE" subtype:nil];
     }];
 }
 
 + (void)base64:(ForgeTask*)task file:(NSDictionary*)file {
-    // TODO validate this via ForgeFile construction rather
-    if (![file objectForKey:@"path"] || [file objectForKey:@"path"] == [NSNull null]) {
-        [task error:@"Invalid file object passed to file.base64, missing path property." type:@"BAD_INPUT" subtype:nil];
-        return;
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
     
-    [[[ForgeFile alloc] initWithForgeFile:file] data:^(NSData *data) {
+    [forgeFile contents:^(NSData *data) {
         [task success:[data base64EncodingWithLineLength:0]];
     } errorBlock:^(NSError *error) {
         [task error:[error localizedDescription] type:@"EXPECTED_FAILURE" subtype:nil];
@@ -95,13 +110,13 @@
 }
 
 + (void)string:(ForgeTask*)task file:(NSDictionary*)file {
-    // TODO validate this via ForgeFile construction rather
-    if (![file objectForKey:@"path"] || [file objectForKey:@"path"] == [NSNull null]) {
-        [task error:@"Invalid file object passed to file.string, missing path property." type:@"BAD_INPUT" subtype:nil];
-        return;
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
     
-    [[[ForgeFile alloc] initWithForgeFile:file] data:^(NSData *data) {
+    [forgeFile contents:^(NSData *data) {
         [task success:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
     } errorBlock:^(NSError *error) {
         [task error:[error localizedDescription] type:@"EXPECTED_FAILURE" subtype:nil];
@@ -109,8 +124,26 @@
 }
 
 + (void)remove:(ForgeTask*)task file:(NSDictionary*)file {
-    // TODO create a native method on ForgeFile for this!
-    // We can only delete files not URIs
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
+    }
+    
+    // restrict destructive operations to temporary, permanent and document endpoints only
+    NSArray *whitelist = @[ForgeStorage.EndpointIDs.Temporary, ForgeStorage.EndpointIDs.Permanent, ForgeStorage.EndpointIDs.Documents];
+    if (![whitelist containsObject:forgeFile.endpointid]) {
+        return [task error:[NSString stringWithFormat:@"Cannot remove file from protected endpoint: %@", forgeFile.endpointid]
+                      type:@"EXPECTED_FAILURE" subtype:nil];
+    }
+    
+    
+    [NSFileManager.defaultManager removeItemAtURL:[ForgeStorage nativeURL:forgeFile] error:&error];
+    if (error != nil) {
+        return [task error:@"Unable to delete file" type:@"UNEXPECTED_ERROR" subtype:nil];
+    }
+    
+    
     if ([[file objectForKey:@"uri"] hasPrefix:@"/"]) {
         if ([[NSFileManager defaultManager] removeItemAtPath:[task.params objectForKey:@"uri"] error:nil]) {
             [task success:nil];
@@ -126,27 +159,26 @@
 #pragma mark operations on urls
 
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)urlString {
-    NSURL *url = [NSURL URLWithString:urlString];
+    NSURL *source = [NSURL URLWithString:urlString];
     
     NSString *filename = [[NSUUID UUID] UUIDString];
     filename = [filename stringByAppendingString:@"_"];
-    filename = [filename stringByAppendingString:url.path.pathComponents.lastObject];
+    filename = [filename stringByAppendingString:source.path.pathComponents.lastObject];
     
-    NSURL *temp_url = [ForgeStorage.temporaryDirectory URLByAppendingPathComponent:filename];
+    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary resource:filename];
+    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
 
-    // TODO why dispatch on global queue?
-    // TODO return an actual file object
-    // TODO convenience constructor for file objects!
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSData *data = [NSData dataWithContentsOfURL:url];
-        if ([data writeToURL:temp_url atomically:YES]) {
-            [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:temp_url];
-            [task success:[ForgeStorage.temporaryRoute stringByAppendingPathComponent:filename]];
+        NSData *data = [NSData dataWithContentsOfURL:source];
+        if ([data writeToURL:destination atomically:YES]) {
+            [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:destination];
+            [task success:forgeFile.scriptObject];
         } else {
             [task error:@"Unable to save to file" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
     });
 }
+
 
 // TODO deprecate in favour of saveToRoute:blah filename:optional ?
 + (void)saveURL:(ForgeTask*)task url:(NSString*)url {
@@ -170,50 +202,52 @@
 
 #pragma mark operations on paths
 
-+ (void)getLocal:(ForgeTask*)task name:(NSString*)path {
-    [task success:[[[ForgeFile alloc] initWithPath:path] toJSON]];
+// TODO rename to getFileFromSourceDirectory same way we renamed forge.tools.getLocal
++ (void)getLocal:(ForgeTask*)task name:(NSString*)resource {
+    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
+    [task success:forgeFile.scriptObject];
 }
 
 
 #pragma mark operations on filesystem
 
 + (void)clearCache:(ForgeTask*)task {
-    for (NSString *path in [[NSFileManager defaultManager] subpathsAtPath:NSTemporaryDirectory()]) {
-        [[NSFileManager defaultManager] removeItemAtPath:[NSTemporaryDirectory() stringByAppendingPathComponent:path] error:nil];
+    NSString *temporaryPath = ForgeStorage.Directories.Temporary.path;
+    for (NSString *path in [NSFileManager.defaultManager subpathsAtPath:temporaryPath]) {
+        [NSFileManager.defaultManager removeItemAtPath:[temporaryPath stringByAppendingPathComponent:path] error:nil];
     }
     [task success:nil];
 }
 
-+ (void)getStorageInformation:(ForgeTask*)task {
-    NSError *error = nil;
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSDictionary *dictionary = [[NSFileManager defaultManager] attributesOfFileSystemForPath:[paths lastObject] error: &error];
-    NSString* appDir = [[NSBundle mainBundle] bundlePath];
-    NSString* cacheDir = NSTemporaryDirectory();
 
-    if (!dictionary || !cacheDir || !appDir) {
++ (void)getStorageInformation:(ForgeTask*)task {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSDictionary *attributes = [NSFileManager.defaultManager attributesOfFileSystemForPath:[paths lastObject]
+                                                                                     error:nil];    
+    NSString* appPath = NSBundle.mainBundle.bundlePath;
+    NSString* cachePath = ForgeStorage.Directories.Temporary.path;
+
+    if (!attributes || !cachePath || !appPath) {
         [task error:@"Error reading storage information" type:@"UNEXPECTED_FAILURE" subtype:nil];
         return;
     }
 
-    [task success:@{@"total": [dictionary objectForKey: NSFileSystemSize],
-                    @"free": [dictionary objectForKey:NSFileSystemFreeSize],
-                    @"app": [file_API getDirectorySize:appDir],
-                    @"cache": [file_API getDirectorySize:cacheDir]}];
+    [task success:@{@"total": [attributes objectForKey:NSFileSystemSize],
+                    @"free":  [attributes objectForKey:NSFileSystemFreeSize],
+                    @"app":   [file_API _getDirectorySize:appPath],
+                    @"cache": [file_API _getDirectorySize:cachePath]}];
 }
 
-+ (NSNumber*)getDirectorySize:(NSString *)path {
++ (NSNumber*)_getDirectorySize:(NSString*)path {
     unsigned long long int result = 0;
-
-    NSArray *files = [[NSFileManager defaultManager] subpathsAtPath:path];
-
+    NSArray *files = [NSFileManager.defaultManager subpathsAtPath:path];
     for (NSString *file in files) {
-        NSDictionary *attrs = [[NSFileManager defaultManager] attributesOfItemAtPath:[path stringByAppendingPathComponent:file] error:nil];
+        NSDictionary *attrs = [NSFileManager.defaultManager attributesOfItemAtPath:[path stringByAppendingPathComponent:file] error:nil];
         result += [attrs fileSize];
     }
-
     return [NSNumber numberWithUnsignedLongLong:result];
 }
+
 
 
 #pragma mark permissions
@@ -223,7 +257,6 @@
     JLAuthorizationStatus status = [jlpermission authorizationStatus];
     [task success:[NSNumber numberWithBool:status == JLPermissionAuthorized]];
 }
-
 
 + (void)permissions_request:(ForgeTask*)task permission:(NSString *)permission {
     JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
