@@ -57,11 +57,11 @@
             return;
         }
 
-        NSMutableArray *ret = [NSMutableArray arrayWithCapacity:results.count];
+        NSMutableArray<ForgeFile*> *files = [NSMutableArray arrayWithCapacity:results.count];
         __block NSError *error = nil;
 
         [results enumerateObjectsUsingBlock:^(PHPickerResult *result, NSUInteger index, BOOL *stop) {
-            NSDictionary *file = nil;
+            ForgeFile *file = nil;
             if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeImage.identifier]) {
                 file = [self saveImageForResultSync:result error:&error];
             } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
@@ -73,18 +73,17 @@
                 return;
             }
 
-            // TODO also return result.assetIdentifier as part of the file object
             if (file != nil) {
-                [ret addObject:file];
+                [files addObject:file];
             }
         }];
 
         if (error != nil) {
             [self->task error:[error localizedDescription] type:@"UNEXPECTED_FAILURE" subtype:nil];
-        } else if (ret.count == 0) {
+        } else if (files.count == 0) {
             [self->task error:@"No valid items selected" type:@"UNEXPECTED_FAILURE" subtype:nil];
         } else {
-            [self->task success:ret.firstObject];
+            [self->task success:files.firstObject.scriptObject];
         }
 
         self->me = nil;
@@ -94,7 +93,7 @@
 
 #pragma mark helpers
 
-- (NSDictionary*)saveImageForResultSync:(PHPickerResult*)result error:(NSError**)error {
+- (ForgeFile*)saveImageForResultSync:(PHPickerResult*)result error:(NSError**)error {
     if (![result.itemProvider canLoadObjectOfClass:[UIImage class]]) {
         *error = [NSError errorWithDomain:NSItemProviderErrorDomain
                                     code:NSItemProviderUnavailableCoercionError
@@ -104,7 +103,7 @@
         return nil;
     }
 
-    __block NSDictionary *ret = nil;
+    __block ForgeFile *ret = nil;
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
@@ -116,23 +115,12 @@
                 error_ret = error;
 
             } else {
-                // TODO use [ForgeStorage url]
-                NSString *filename = [ForgeStorage temporaryFileNameWithExtension:@"jpg"];
-                NSURL *url = [ForgeStorage.Directories.Temporary URLByAppendingPathComponent:filename];
-
+                ret = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+                                       resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
+                
+                NSURL *url = [ForgeStorage nativeURL:ret];
                 [UIImageJPEGRepresentation(image, 0.9) writeToURL:url atomically:YES];
-                [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:url];
-
-                ret = @{
-                    @"mimetype": @"image/jpg",
-                    @"endpoint": ForgeStorage.Endpoints.Temporary,
-                    @"resource": filename,
-                    @"path": [ForgeStorage.Endpoints.Temporary stringByAppendingPathComponent:filename],
-
-                    @"_url": url.absoluteString,
-                    @"_ios_assetIdentifier": result.assetIdentifier,
-                    @"_uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
-                };
+                [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:url];
             }
             dispatch_semaphore_signal(semaphore);
         }];
@@ -143,32 +131,33 @@
 }
 
 
-- (NSDictionary*)saveVideoForResultSync:(PHPickerResult*)result error:(NSError**)error {
-    __block NSDictionary *ret = nil;
+- (ForgeFile*)saveVideoForResultSync:(PHPickerResult*)result error:(NSError**)error {
+    __block ForgeFile *ret = nil;
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
-        [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeQuickTimeMovie.identifier completionHandler:^(NSURL* _Nullable result_url, NSError * _Nullable error) {
+        [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeQuickTimeMovie.identifier completionHandler:^(NSURL* _Nullable url, NSError * _Nullable error) {
             if (error != nil) {
                 error_ret = error;
 
             } else {
-                NSString *extension = result_url.pathExtension;
+                NSString *extension = url.pathExtension;
                 if (extension == nil) {
                     extension = @"mp4";
                 }
-                NSString *filename = [ForgeStorage temporaryFileNameWithExtension:extension];
-                NSURL *url = [ForgeStorage.Directories.Temporary URLByAppendingPathComponent:filename];
+                ret = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+                                       resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
+                NSURL *destination = [ForgeStorage nativeURL:ret];
 
-                NSData *data = [NSData dataWithContentsOfURL:result_url];
+                NSData *data = [NSData dataWithContentsOfURL:url];
                 if (data == nil) {
                     error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
                                                 code:NSItemProviderUnavailableCoercionError
                                             userInfo:@{
                         NSLocalizedDescriptionKey:@"Failed to load image data for the selected item"
                     }];
-
-                } else if (![data writeToURL:url atomically:YES]) {
+                    
+                } else if (![data writeToURL:destination atomically:YES]) {
                     error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
                                                 code:NSItemProviderUnavailableCoercionError
                                             userInfo:@{
@@ -177,16 +166,6 @@
 
                 } else {
                     [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:url];
-                    ret = @{
-                        @"mimetype": [NSString stringWithFormat:@"video/%@", extension],
-                        @"endpoint": ForgeStorage.Endpoints.Temporary,
-                        @"resource": filename,
-                        @"path": [ForgeStorage.Endpoints.Temporary stringByAppendingPathComponent:filename],
-
-                        @"_url": url.absoluteString,
-                        @"_ios_assetIdentifier": result.assetIdentifier,
-                        @"_uri": url.path,  // TODO deprecate - for backwards compatibility < iOS 14
-                    };
                 }
             }
             dispatch_semaphore_signal(semaphore);

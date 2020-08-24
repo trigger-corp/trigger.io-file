@@ -22,7 +22,7 @@
 
 #pragma mark media picker
 
-+ (void)getImage:(ForgeTask*)task /*source:(NSString*)source*/ {
++ (void)getImage:(ForgeTask*)task {
     // TODO handle options: width, height
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
@@ -36,7 +36,8 @@
     }
 }
 
-+ (void)getVideo:(ForgeTask*)task /*source:(NSString*)source*/ {
+
++ (void)getVideo:(ForgeTask*)task {
     // TODO handle options: quality
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
@@ -54,10 +55,18 @@
 }
 
 
+#pragma mark operations on paths
+
+// TODO rename to getFileFromSourceDirectory same way we renamed forge.tools.getLocal
++ (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
+    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
+    [task success:forgeFile.scriptObject];
+}
+
+
 #pragma mark operations on File objects
 
-// TODO rename to scriptPath
-+ (void)URL:(ForgeTask*)task file:(NSDictionary*)file {
++ (void)getScriptPath:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
     ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
     if (error != nil) {
@@ -95,6 +104,7 @@
     }];
 }
 
+
 + (void)base64:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
     ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
@@ -108,6 +118,7 @@
         [task error:[error localizedDescription] type:@"EXPECTED_FAILURE" subtype:nil];
     }];
 }
+
 
 + (void)string:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
@@ -123,6 +134,7 @@
     }];
 }
 
+
 + (void)remove:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
     ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
@@ -137,44 +149,34 @@
                       type:@"EXPECTED_FAILURE" subtype:nil];
     }
     
-    
     [NSFileManager.defaultManager removeItemAtURL:[ForgeStorage nativeURL:forgeFile] error:&error];
     if (error != nil) {
-        return [task error:@"Unable to delete file" type:@"UNEXPECTED_ERROR" subtype:nil];
+        return [task error:[NSString stringWithFormat:@"Unable to delete file: %@", error.localizedDescription]
+                      type:@"UNEXPECTED_ERROR" subtype:nil];
     }
     
-    
-    if ([[file objectForKey:@"uri"] hasPrefix:@"/"]) {
-        if ([[NSFileManager defaultManager] removeItemAtPath:[task.params objectForKey:@"uri"] error:nil]) {
-            [task success:nil];
-        } else {
-            [task error:@"Unable to delete file" type:@"UNEXPECTED_ERROR" subtype:nil];
-        }
-    } else {
-        [task error:@"Not a deletable file" type:@"BAD_INPUT" subtype:nil];
-    }
+    [task success:nil];
 }
 
 
 #pragma mark operations on urls
 
-+ (void)cacheURL:(ForgeTask*)task url:(NSString*)urlString {
-    NSURL *source = [NSURL URLWithString:urlString];
++ (void)cacheURL:(ForgeTask*)task url:(NSString*)url {
+    NSURL *source = [NSURL URLWithString:url];
     
-    NSString *filename = [[NSUUID UUID] UUIDString];
-    filename = [filename stringByAppendingString:@"_"];
-    filename = [filename stringByAppendingString:source.path.pathComponents.lastObject];
+    NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
+    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+                                            resource:filename];
     
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary resource:filename];
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSData *data = [NSData dataWithContentsOfURL:source];
         if ([data writeToURL:destination atomically:YES]) {
-            [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:destination];
+            [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
             [task success:forgeFile.scriptObject];
         } else {
-            [task error:@"Unable to save to file" type:@"UNEXPECTED_FAILURE" subtype:nil];
+            [task error:@"Unable to cache url" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
     });
 }
@@ -182,31 +184,25 @@
 
 // TODO deprecate in favour of saveToRoute:blah filename:optional ?
 + (void)saveURL:(ForgeTask*)task url:(NSString*)url {
-    // TODO move tempfile creation code to ForgeStorage
-    NSString *uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, CFUUIDCreate(NULL));
-    NSString *tempFile = [[ForgeApp.sharedApp.applicationSupportDirectory.path stringByAppendingPathComponent:uuid] stringByAppendingString:[[[[NSURL URLWithString:url] path] pathComponents] lastObject]];
+    NSURL *source = [NSURL URLWithString:url];
 
-    // TODO any reason why we're using the global queue?
+    NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
+    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Permanent
+                                            resource:filename];
+    
+    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:url]];
-
-        if ([data writeToFile:tempFile atomically:YES]) {
-            [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtPath:tempFile];
-            [task success:tempFile];
+        NSData *data = [NSData dataWithContentsOfURL:source];
+        if ([data writeToURL:destination atomically:YES]) {
+            [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
+            [task success:destination];
         } else {
-            [task error:@"Unable to save to file" type:@"UNEXPECTED_FAILURE" subtype:nil];
+            [task error:@"Unable to save url" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
     });
 }
 
-
-#pragma mark operations on paths
-
-// TODO rename to getFileFromSourceDirectory same way we renamed forge.tools.getLocal
-+ (void)getLocal:(ForgeTask*)task name:(NSString*)resource {
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
-    [task success:forgeFile.scriptObject];
-}
 
 
 #pragma mark operations on filesystem
