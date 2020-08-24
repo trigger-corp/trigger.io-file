@@ -46,6 +46,61 @@ forge["file"] = {
     },
 
     /**
+     * Get file object for a local path.
+     *
+     * @param {string} name
+     * @param {function(file: File)=} success
+     * @param {function({message: string}=} error
+     */
+    "getLocal": function (path, success, error) { // deprecated
+        forge.internal.call("file.getFileFromSourceDirectory", {
+            resource: resource
+        }, success, error);
+    },
+    "getFileFromSourceDirectory": function (path, success, error) {
+        forge.internal.call("file.getFileFromSourceDirectory", {
+            resource: resource
+        }, success, error);
+    },
+
+    /**
+     * Get the URL an image which is no bigger than the given height and width.
+     *
+     * URL must be useable in the current scope of the code, may return a base64 data: URI.
+     *
+     * @param {file: File} file
+     * @param {object} options TODO deprecate
+     * @param {function(url: string)=} success
+     * @param {function({message: string}=} error
+     */
+    // TODO either deprecate this or rename it to something like getEmbeddableImageURL
+    "URL": function (file, options, success, error) { // deprecated
+        if (typeof options === "function") {
+            error = success;
+            success = options;
+        }
+        // TODO deprecated update docs Avoid mutating original file
+        var newFile = {};
+        for (var prop in file) {
+            newFile[prop] = file[prop];
+        }
+        newFile.height = options.height || file.height || undefined;
+        newFile.width = options.width || file.width || undefined;
+        forge.internal.call("file.getScriptPath", {
+            file: newFile
+        }, function (url) {
+            success(url);
+        }, error);
+    },
+    "getScriptPath": function (file, success, error) {
+        forge.internal.call("file.getScriptPath", {
+            file: file
+        }, function (url) {
+            success(url);
+        }, error);
+    },
+
+    /**
      * Returns file information
      *
      * @param {file: File} file
@@ -82,37 +137,6 @@ forge["file"] = {
         forge.internal.call("file.string", {
             file: file
         }, success, error);
-    },
-
-    /**
-     * Get the URL an image which is no bigger than the given height and width.
-     *
-     * URL must be useable in the current scope of the code, may return a base64 data: URI.
-     *
-     * @param {file: File} file
-     * @param {object} options TODO deprecate
-     * @param {function(url: string)=} success
-     * @param {function({message: string}=} error
-     */
-    // TODO either deprecate this or rename it to something like getEmbeddableImageURL
-    "URL": function (file, options, success, error) {
-        if (typeof options === "function") {
-            error = success;
-            success = options;
-        }
-        // TODO deprecated update docs Avoid mutating original file
-        var newFile = {};
-        for (var prop in file) {
-            newFile[prop] = file[prop];
-        }
-        newFile.height = options.height || file.height || undefined;
-        newFile.width = options.width || file.width || undefined;
-        forge.internal.call("file.URL", {
-            file: newFile
-        }, function (url) {
-            // TODO check success(forge.httpd.normalize(url));
-            success(url);
-        }, error);
     },
 
     /**
@@ -174,20 +198,6 @@ forge["file"] = {
         }, success && function (file) {
             success(file);
         }, error);
-    },
-
-
-    /**
-     * Get file object for a local path.
-     *
-     * @param {string} name
-     * @param {function(file: File)=} success
-     * @param {function({message: string}=} error
-     */
-    "getLocal": function (path, success, error) {
-        forge.internal.call("file.getLocal", {
-            path: path
-        }, success, error);
     },
 
 
