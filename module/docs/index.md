@@ -3,25 +3,39 @@
 
 The ``forge.file`` namespace allows storage of files on the local system and selection from the users saved photos and videos.
 
-- File objects are simple JavaScript objects which contain at least a
-   ``uri``. They can be serialised using JSON.stringify and safely
-   stored in Forge preferences.
-- The ``uri`` parameter can be used directly on some platforms. This is
-   not recommended - instead use the provided helper function
-   ``forge.file.URL``.
-- Image orientation is automatically handled where possible: if a
-   camera photo contains rotation information it will be correctly
-   rotated before it is displayed or uploaded.
-- Files can be uploaded by including them as an array in
-   [forge.request.ajax()](/modules/request/current/docs/index.html#forgerequestajaxoptions). For example if ``myFile1`` and ``myFile2`` were
-   images returned by [forge.file.getImage()](index.html#forgefilegetimageparams-success-error):
 
-        forge.request.ajax({
-            url: "http://example.com/file_upload",
-            files: [myFile1, myFile2]
-        });
+## TODO
 
-> ::Note:: For more information about how to cache remote files in your app, see [Caching files](/docs/current/recipes/offline/cache.html).
+* TODO We need a forge.file.getMimeType() method
+
+
+## File objects
+
+File objects are simple JavaScript objects which can be serialised using JSON.stringify and safely stored in Forge preferences.
+
+### Definition
+
+A File object contains at least the following keys:
+
+    {
+        "endpoint": "/tmp",
+        "resource": "/images/23e4567-e89b-12d3-a456-426614174000.png",
+    }
+
+* `endpoint`
+* `resource`
+
+Other keys may include:
+
+    "filename": "23e4567-e89b-12d3-a456-426614174000.png"
+    "mimetype": "image/jpg" | "image/mov"
+
+For more information see: TODO /docs/current/api/core/types.html
+
+### Persistence
+
+Unless explicitly saved into permanent storage, assume that files are temporary
+>::Note:: For more information about how to cache remote files in your app, see [Caching files](/docs/current/recipes/offline/cache.html).
 
 
 ## Config options
@@ -114,10 +128,10 @@ remove them, if the file is only going to be used temporarily then
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
-!method: forge.file.URL(file, success, error)
+!method: `deprecated` forge.file.URL(file, success, error)
 !param: file `file` the file object to load data from
 !param: success `function(url)` callback to be invoked when no errors occur (argument is the file URL)
-!description: Returns a URL which can be used to display an image. Height and width will be limited by the values given when originally selecting the image.
+!description: Returns a URL which can be used to display an image. Height and width will be limited by the values given when originally selecting the image. This method has been deprecated. Use the `path` property of file objects instead.
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 

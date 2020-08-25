@@ -9,20 +9,17 @@
 #import <Foundation/Foundation.h>
 
 @interface file_Delegate_deprecated : NSObject <UINavigationControllerDelegate,
-                                     UIImagePickerControllerDelegate>
+                                                UIImagePickerControllerDelegate>
 {
+    file_Delegate_deprecated *me;
 	ForgeTask *task;
-	file_Delegate_deprecated *me;
+    NSString* type;
+    	
 	UIImagePickerController *keepPicker;
-	id params;
-	BOOL didReturn;
-	NSString* type;
 }
 
-- (file_Delegate_deprecated*_Nullable) initWithTask:(ForgeTask*_Nullable)initTask andParams:(id _Nullable )initParams andType:(NSString*_Nullable)initType;
-- (void)openPicker;
-- (void)closePicker:(void (^ __nullable)(void))success;
-- (void)cancel;
-- (void)didDisappear;
++ (file_Delegate_deprecated*) withTask:(ForgeTask*)task type:(NSString*)type;
 
+- (void)openPicker;
+    
 @end

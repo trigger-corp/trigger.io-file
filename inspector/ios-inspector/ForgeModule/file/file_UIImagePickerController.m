@@ -27,11 +27,6 @@
     [super viewDidLoad];
 }
 
-- (void) viewDidDisappear:(BOOL)animated {
-    [super viewDidDisappear:animated];
-	[(file_Delegate_deprecated*)self.delegate didDisappear];
-}
-
 - (BOOL)shouldAutorotate {
     return YES;
 }

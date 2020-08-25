@@ -28,10 +28,10 @@
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = 1;
         configuration.filter = PHPickerFilter.imagesFilter;
-        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task andConfiguration:configuration];
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
         [delegate openPicker];
     } else {
-        file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeImage];
+        file_Delegate_deprecated *delegate = [file_Delegate_deprecated withTask:task type:(NSString*)kUTTypeImage];
         [delegate openPicker];
     }
 }
@@ -46,10 +46,10 @@
             PHPickerFilter.videosFilter,
             // TODO PHPickerFilter.livePhotosFilter 
         ]];
-        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task andConfiguration:configuration];
+        file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
         [delegate openPicker];
     } else {
-        file_Delegate_deprecated *delegate = [[file_Delegate_deprecated alloc] initWithTask:task andParams:task.params andType:(NSString *)kUTTypeMovie];
+        file_Delegate_deprecated *delegate = [file_Delegate_deprecated withTask:task type:(NSString*)kUTTypeMovie];
         [delegate openPicker];
     }
 }

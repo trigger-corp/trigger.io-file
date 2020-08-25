@@ -21,7 +21,7 @@ API_AVAILABLE(ios(14))
     PHPickerConfiguration *configuration;
 }
 
-+ (file_PHPickerDelegate*) withTask:(ForgeTask*)task andConfiguration:(PHPickerConfiguration*)configuration API_AVAILABLE(ios(14));
++ (file_PHPickerDelegate*) withTask:(ForgeTask*)task configuration:(PHPickerConfiguration*)configuration API_AVAILABLE(ios(14));
 
 - (void)openPicker;
 

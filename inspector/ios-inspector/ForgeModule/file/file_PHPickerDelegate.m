@@ -19,7 +19,7 @@
 
 #pragma mark life-cycle
 
-+ (file_PHPickerDelegate*) withTask:(ForgeTask*)task andConfiguration:(PHPickerConfiguration*)configuration {
++ (file_PHPickerDelegate*) withTask:(ForgeTask*)task configuration:(PHPickerConfiguration*)configuration {
     file_PHPickerDelegate *delegate = [[self alloc] init];
     if (delegate) {
         delegate->me = delegate; // "retain"
@@ -118,9 +118,9 @@
                 ret = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
                                        resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
                 
-                NSURL *url = [ForgeStorage nativeURL:ret];
-                [UIImageJPEGRepresentation(image, 0.9) writeToURL:url atomically:YES];
-                [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:url];
+                NSURL *destination = [ForgeStorage nativeURL:ret];
+                [UIImageJPEGRepresentation(image, 0.9) writeToURL:destination atomically:YES];
+                [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
             }
             dispatch_semaphore_signal(semaphore);
         }];
@@ -154,14 +154,14 @@
                     error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
                                                 code:NSItemProviderUnavailableCoercionError
                                             userInfo:@{
-                        NSLocalizedDescriptionKey:@"Failed to load image data for the selected item"
+                        NSLocalizedDescriptionKey:@"Failed to load video data for the selected item"
                     }];
                     
                 } else if (![data writeToURL:destination atomically:YES]) {
                     error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
                                                 code:NSItemProviderUnavailableCoercionError
                                             userInfo:@{
-                        NSLocalizedDescriptionKey:@"Failed to write image data for the selected item"
+                        NSLocalizedDescriptionKey:@"Failed to write video data for the selected item"
                     }];
 
                 } else {
