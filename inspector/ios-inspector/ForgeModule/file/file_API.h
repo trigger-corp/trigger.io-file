@@ -2,8 +2,7 @@
 //  file_API.h
 //  Forge
 //
-//  Created by Connor Dunn on 14/03/2012.
-//  Copyright (c) 2012 Trigger Corp. All rights reserved.
+//  Copyright (c) 2020 Trigger Corp. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -29,6 +28,6 @@
 + (void)saveURL:(ForgeTask*)task url:(NSString*)url;
 
 + (void)clearCache:(ForgeTask*)task;
-+ (void)getStorageInformation:(ForgeTask*)task;
++ (void)getStorageSizeInformation:(ForgeTask*)task;
 
 @end

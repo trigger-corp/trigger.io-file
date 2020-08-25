@@ -182,6 +182,7 @@ asyncTest("Embedding video in webview", 1, function() {
 });
 
 
+
 asyncTest("Cancel", 1, function() {
     var runTest = function () {
         forge.file.getImage(function () {
@@ -263,6 +264,40 @@ asyncTest("File saving", 4, function () {
 });
 
 
+asyncTest("Device storage", 1, function () {
+    forge.file.getStorageSizeInformation(function (size) {
+        var msg = "Device storage size information: <ul>";
+        var meg = Math.pow(1024, 2);
+        var gig = Math.pow(1024, 3);
+        msg += "<li>Total: " + size.total / gig + " GB</li>";
+        msg += "<li>Free: " + size.free / gig + " GB</li>";
+        msg += "<li>App: " + size.app / meg + " MB</li>";
+        msg += "<li>Endpoints:";
+        msg += "  <ul>";
+        msg += "    <li>/forge: " + size.endpoints.forge / meg + " MB</li>";
+        msg += "    <li>/src: " + size.endpoints.source / meg + " MB</li>";
+        msg += "    <li>/temporary: " + size.endpoints.temporary / meg + " MB</li>";
+        msg += "    <li>/permanent: " + size.endpoints.permanent / meg + " MB</li>";
+        msg += "    <li>/documents: " + size.endpoints.documents / meg + " MB</li>";
+        msg += "  </ul>";
+        msg += "</ul>Does this look correct?";
+        askQuestion(msg, {
+            Yes: function () {
+                ok(true, "Success with forge.file.getStorageSizeInformation");
+                start();
+
+            }, No: function () {
+                ok(false, "User claims failure with forge.file.getStorageSizeInformation");
+                start();
+            }
+        });
+    }, function (e) {
+        ok(false, "API call failure: "+e.message);
+        start();
+    });
+});
+
+
 asyncTest("File cache - With clearCache", 6, function () {
     askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg'>", { Yes: function () {
         ok(true, "Image loaded from trigger.io");
@@ -270,7 +305,7 @@ asyncTest("File cache - With clearCache", 6, function () {
             ok(true, "file.cacheURL claims success");
             forge.file.URL(file, function (url) {
                 ok(true, "file.URL claims success");
-                askQuestion("Is this the same image:<br><img src='"+url+"'>", { Yes: function () {
+                askQuestion("Is this the same image:<br><img src='" + url + "'>", { Yes: function () {
                     ok(true, "Image cached correctly");
                     forge.file.clearCache(function () {
                         ok(true, "file.clearCache claims success");
@@ -298,31 +333,4 @@ asyncTest("File cache - With clearCache", 6, function () {
         ok(false, "Image not loaded");
         start();
     }});
-});
-
-
-
-asyncTest("Diskspace", 1, function () {
-    forge.file.getStorageInformation(function (info) {
-        var msg = "Device storage information: <ul>";
-        var gig = Math.pow(1024, 3);
-        msg += "<li>Total: " + info.total / gig + "</li>";
-        msg += "<li>Free: " + info.free / gig + "</li>";
-        msg += "<li>App: " + info.app / gig + "</li>";
-        msg += "<li>Cache: " + info.cache / gig + "</li>";
-        msg += "</ul>Does this look correct?";
-        askQuestion(msg, {
-            Yes: function () {
-                ok(true, "Success with forge.file.getStorageInformation");
-                start();
-
-            }, No: function () {
-                ok(false, "User claims failure with forge.file.getStorageInformation");
-                start();
-            }
-        });
-    }, function (e) {
-        ok(false, "API call failure: "+e.message);
-        start();
-    });
 });

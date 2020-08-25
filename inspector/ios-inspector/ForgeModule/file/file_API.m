@@ -2,8 +2,7 @@
 //  file_API.m
 //  Forge
 //
-//  Created by Connor Dunn on 14/03/2012.
-//  Copyright (c) 2012 Trigger Corp. All rights reserved.
+//  Copyright (c) 2020 Trigger Corp. All rights reserved.
 //
 
 #import <CoreServices/UTCoreTypes.h>
@@ -227,7 +226,6 @@
 }
 
 
-
 #pragma mark operations on filesystem
 
 + (void)clearCache:(ForgeTask*)task {
@@ -239,34 +237,15 @@
 }
 
 
-+ (void)getStorageInformation:(ForgeTask*)task {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSDictionary *attributes = [NSFileManager.defaultManager attributesOfFileSystemForPath:[paths lastObject]
-                                                                                     error:nil];    
-    NSString* appPath = NSBundle.mainBundle.bundlePath;
-    NSString* cachePath = ForgeStorage.Directories.Temporary.path;
-
-    if (!attributes || !cachePath || !appPath) {
-        [task error:@"Error reading storage information" type:@"UNEXPECTED_FAILURE" subtype:nil];
++ (void)getStorageSizeInformation:(ForgeTask*)task {
+    NSError *error = nil;
+    NSDictionary *sizeInformation = [ForgeStorage getSizeInformation:&error];
+    if (error != nil) {
+        [task error:@"Error reading storage size information" type:@"UNEXPECTED_FAILURE" subtype:nil];
         return;
     }
-
-    [task success:@{@"total": [attributes objectForKey:NSFileSystemSize],
-                    @"free":  [attributes objectForKey:NSFileSystemFreeSize],
-                    @"app":   [file_API _getDirectorySize:appPath],
-                    @"cache": [file_API _getDirectorySize:cachePath]}];
+    [task success:sizeInformation];
 }
-
-+ (NSNumber*)_getDirectorySize:(NSString*)path {
-    unsigned long long int result = 0;
-    NSArray *files = [NSFileManager.defaultManager subpathsAtPath:path];
-    for (NSString *file in files) {
-        NSDictionary *attrs = [NSFileManager.defaultManager attributesOfItemAtPath:[path stringByAppendingPathComponent:file] error:nil];
-        result += [attrs fileSize];
-    }
-    return [NSNumber numberWithUnsignedLongLong:result];
-}
-
 
 
 #pragma mark permissions

@@ -217,7 +217,10 @@ forge["file"] = {
      * @param {function()=} success
      * @param {function({total: number, free: number, app: number, cache: number})=} success
      */
-    "getStorageInformation": function (success, error) {
-        forge.internal.call("file.getStorageInformation", {}, success, error);
+    "getStorageInformation": function (success, error) { // deprecated
+        forge.internal.call("file.getStorageSizeInformation", {}, success, error);
+    },
+    "getStorageSizeInformation": function (success, error) {
+        forge.internal.call("file.getStorageSizeInformation", {}, success, error);
     }
 };
