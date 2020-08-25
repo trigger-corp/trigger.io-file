@@ -55,17 +55,29 @@
 }
 
 
-#pragma mark operations on paths
+#pragma mark operations on resource paths
 
-// TODO rename to getFileFromSourceDirectory same way we renamed forge.tools.getLocal
+// used to be called getLocall, returns a File like: { endpoint: "/src", resource: "/path/to/resource.html" }
 + (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
     ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
     [task success:forgeFile.scriptObject];
 }
 
+// returns a fully qualified url like: https://localhost:1234/src/path/to/resource.html
++ (void)getURLFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
+    if ([resource hasPrefix:@"http://"] || [resource hasPrefix:@"https://"]) {
+        [task success:resource];
+        
+    } else {
+        ForgeFile *file = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
+        [task success:[ForgeStorage scriptURL:file].absoluteString];
+    }
+}
+
 
 #pragma mark operations on File objects
 
+// returns an absolute path like: /endpoint/with/path/to/resource.html
 + (void)getScriptPath:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
     ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
@@ -74,6 +86,17 @@
     }
     
     [task success:[ForgeStorage scriptPath:forgeFile]];
+}
+
+// used to be called URL, returns an absolute URL like: https://localhost:1234/src/path/to/resource.html
++ (void)getScriptURL:(ForgeTask*)task file:(NSDictionary*)file {
+    NSError *error = nil;
+    ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
+    if (error != nil) {
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
+    }
+    
+    [task success:[ForgeStorage scriptURL:forgeFile].absoluteString];
 }
 
 

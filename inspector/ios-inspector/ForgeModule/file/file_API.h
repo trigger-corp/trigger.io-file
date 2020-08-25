@@ -14,8 +14,11 @@
 + (void)getVideo:(ForgeTask*)task;
 
 + (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource;
++ (void)getURLFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource;
 
 + (void)getScriptPath:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)getScriptURL:(ForgeTask*)task file:(NSDictionary*)file;
+
 + (void)isFile:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)info:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)base64:(ForgeTask*)task file:(NSDictionary*)file;

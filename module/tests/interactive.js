@@ -145,7 +145,7 @@ asyncTest("Gallery", 4, function() {
                             ok(false, "User claims failure with forge.file.URL");
                             start();
                         }});
-                    }, api_error("file.url"));
+                    }, api_error("file.URL"));
                 }, api_error("file.isFile"));
             }, No: function () {
                 ok(false, "User claims failure");

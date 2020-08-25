@@ -86,14 +86,14 @@ forge["file"] = {
         }
         newFile.height = options.height || file.height || undefined;
         newFile.width = options.width || file.width || undefined;
-        forge.internal.call("file.getScriptPath", {
+        forge.internal.call("file.getScriptURL", {
             file: newFile
         }, function (url) {
             success(url);
         }, error);
     },
-    "getScriptPath": function (file, success, error) {
-        forge.internal.call("file.getScriptPath", {
+    "getScriptURL": function (file, success, error) {
+        forge.internal.call("file.getScriptURL", {
             file: file
         }, function (url) {
             success(url);
