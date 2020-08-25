@@ -56,9 +56,8 @@ asyncTest("Cache url and check file info", 1, function() {
 
 asyncTest("Provide invalid file and check file info", 1, function() {
     var file = {
-        "name": "movieCompressed17.mov",
-        "uri": "/var/mobile/Containers/Data/Application/A031E5BB-FFF7-40E3-AC7C-6DFB14EB6625/Documents/movieCompressed17.mov",
-        "type": "video"
+        "endpoint": "/temporary",
+        "resource": "/var/mobile/Containers/Data/Application/A031E5BB-FFF7-40E3-AC7C-6DFB14EB6625/Documents/movieCompressed17.mov"
     };
     forge.file.info(file, function (info) {
         ok(false, "API should not have succeeded: " + JSON.stringify(info));
