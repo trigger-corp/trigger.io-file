@@ -196,7 +196,7 @@
         NSData *data = [NSData dataWithContentsOfURL:source];
         if ([data writeToURL:destination atomically:YES]) {
             [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
-            [task success:destination];
+            [task success:forgeFile.scriptObject];
         } else {
             [task error:@"Unable to save url" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }

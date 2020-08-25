@@ -46,18 +46,18 @@ forge["file"] = {
     },
 
     /**
-     * Get file object for a local path.
+     * Get file object for a local resource in your app's src/ directory.
      *
-     * @param {string} name
+     * @param {string} resource
      * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
-    "getLocal": function (path, success, error) { // deprecated
+    "getLocal": function (resource, success, error) { // deprecated
         forge.internal.call("file.getFileFromSourceDirectory", {
             resource: resource
         }, success, error);
     },
-    "getFileFromSourceDirectory": function (path, success, error) {
+    "getFileFromSourceDirectory": function (resource, success, error) {
         forge.internal.call("file.getFileFromSourceDirectory", {
             resource: resource
         }, success, error);
