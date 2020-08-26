@@ -168,7 +168,7 @@
         return nil;
     }
     
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                             resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
     [UIImageJPEGRepresentation(source, 0.9) writeToURL:destination atomically:YES];
@@ -194,7 +194,7 @@
         extension = @"mp4";
     }
     
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                             resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
     

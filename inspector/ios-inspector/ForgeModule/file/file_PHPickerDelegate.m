@@ -115,7 +115,7 @@
                 error_ret = error;
 
             } else {
-                ret = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+                ret = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                        resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
                 
                 NSURL *destination = [ForgeStorage nativeURL:ret];
@@ -145,7 +145,7 @@
                 if (extension == nil) {
                     extension = @"mp4";
                 }
-                ret = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+                ret = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                        resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
                 NSURL *destination = [ForgeStorage nativeURL:ret];
 

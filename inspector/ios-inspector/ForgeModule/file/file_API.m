@@ -58,7 +58,7 @@
 
 // used to be called getLocall, returns a File like: { endpoint: "/src", resource: "/path/to/resource.html" }
 + (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Source resource:resource];
     [task success:forgeFile.scriptObject];
 }
 
@@ -68,7 +68,7 @@
         [task success:resource];
         
     } else {
-        ForgeFile *file = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Source resource:resource];
+        ForgeFile *file = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Source resource:resource];
         [task success:[ForgeStorage scriptURL:file].absoluteString];
     }
 }
@@ -164,18 +164,10 @@
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
     
-    // restrict destructive operations to temporary, permanent and document endpoints only
-    NSArray *whitelist = @[ForgeStorage.EndpointIDs.Temporary, ForgeStorage.EndpointIDs.Permanent, ForgeStorage.EndpointIDs.Documents];
-    if (![whitelist containsObject:forgeFile.endpointid]) {
-        return [task error:[NSString stringWithFormat:@"Cannot remove file from protected endpoint: %@", forgeFile.endpointid]
-                      type:@"EXPECTED_FAILURE" subtype:nil];
-    }
-    
-    [NSFileManager.defaultManager removeItemAtURL:[ForgeStorage nativeURL:forgeFile] error:&error];
+    [forgeFile remove error:&error];
     if (error != nil) {
-        return [task error:[NSString stringWithFormat:@"Unable to delete file: %@", error.localizedDescription]
-                      type:@"UNEXPECTED_ERROR" subtype:nil];
-    }
+        return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
+    }    
     
     [task success:nil];
 }
@@ -187,7 +179,7 @@
     NSURL *source = [NSURL URLWithString:url];
     
     NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Temporary
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                             resource:filename];
     
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
@@ -209,7 +201,7 @@
     NSURL *source = [NSURL URLWithString:url];
 
     NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
-    ForgeFile *forgeFile = [ForgeFile withEndpointID:ForgeStorage.EndpointIDs.Permanent
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Permanent
                                             resource:filename];
     
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
