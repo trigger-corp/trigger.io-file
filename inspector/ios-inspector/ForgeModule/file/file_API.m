@@ -164,12 +164,11 @@
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
     
-    [forgeFile remove error:&error];
-    if (error != nil) {
+    [forgeFile remove:^{
+        [task success:nil];
+    } errorBlock:^(NSError *error) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
-    }    
-    
-    [task success:nil];
+    }];    
 }
 
 
