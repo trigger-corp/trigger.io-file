@@ -146,11 +146,20 @@ forge["file"] = {
      * @param {function(boolean)=} success
      * @param {function({message: string}=} error
      */
-    "isFile": function (file, success, error) {
+    "isFile": function (file, success, error) { // deprecated
         if (!file) {
             success(false);
         } else {
-            forge.internal.call("file.isFile", {
+            forge.internal.call("file.exists", {
+                file: file
+            }, success, error);
+        }
+    },
+    "exists": function (file, success, error) {
+        if (!file) {
+            success(false);
+        } else {
+            forge.internal.call("file.exists", {
                 file: file
             }, success, error);
         }
