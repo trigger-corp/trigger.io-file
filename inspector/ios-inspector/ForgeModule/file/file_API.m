@@ -99,7 +99,7 @@
 }
 
 
-+ (void)isFile:(ForgeTask*)task file:(NSDictionary*)file {
++ (void)exists:(ForgeTask*)task file:(NSDictionary*)file {
     NSError *error = nil;
     ForgeFile *forgeFile = [ForgeFile withScriptObject:file error:&error];
     if (error != nil) {

@@ -99,8 +99,11 @@ Please note that it is hard to predict the quantifiable properties of videos tha
 !param: error `function(content)` called with details of any error which may occur
 
 !method: forge.file.isFile(file, success, error)
+!description: Deprecated in favour of `forge.file.exists`
+
+!method: forge.file.exists(file, success, error)
 !param: file `file` the file object to check
-!param: success `function(isFile)` callback to be invoked when no errors occur (argument is a boolean value)
+!param: success `function(exists)` callback to be invoked when no errors occur (argument is a boolean value)
 !description: Returns true or false based on whether a given object is a file object and points to an existing file on the current device.
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
