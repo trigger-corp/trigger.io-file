@@ -56,10 +56,10 @@
 
 #pragma mark operations on resource paths
 
-// used to be called getLocall, returns a File like: { endpoint: "/src", resource: "/path/to/resource.html" }
+// used to be called getLocal, returns a File like: { endpoint: "/src", resource: "/path/to/resource.html" }
 + (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
     ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Source resource:resource];
-    [task success:forgeFile.scriptObject];
+    [task success:[forgeFile toScriptObject]];
 }
 
 // returns a fully qualified url like: https://localhost:1234/src/path/to/resource.html
@@ -119,7 +119,7 @@
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
 
-    [forgeFile info:^(NSDictionary* info) {
+    [forgeFile attributes:^(NSDictionary *info) {
         [task success:info];
     } errorBlock:^(NSString* description) {
         [task error:description type:@"UNEXPECTED_FAILURE" subtype:nil];
@@ -187,7 +187,7 @@
         NSData *data = [NSData dataWithContentsOfURL:source];
         if ([data writeToURL:destination atomically:YES]) {
             [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
-            [task success:forgeFile.scriptObject];
+            [task success:[forgeFile toScriptObject]];
         } else {
             [task error:@"Unable to cache url" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
@@ -209,7 +209,7 @@
         NSData *data = [NSData dataWithContentsOfURL:source];
         if ([data writeToURL:destination atomically:YES]) {
             [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
-            [task success:forgeFile.scriptObject];
+            [task success:[forgeFile toScriptObject]];
         } else {
             [task error:@"Unable to save url" type:@"UNEXPECTED_FAILURE" subtype:nil];
         }

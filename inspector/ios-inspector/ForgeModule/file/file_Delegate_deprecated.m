@@ -150,7 +150,7 @@
             return [self->task error:[NSString stringWithFormat:@"Error saving media: %@", error.localizedDescription] type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
 
-        [self->task success:forgeFile.scriptObject];
+        [self->task success:[forgeFile toScriptObject]];
     }];
 }
 

@@ -83,7 +83,7 @@
         } else if (files.count == 0) {
             [self->task error:@"No valid items selected" type:@"UNEXPECTED_FAILURE" subtype:nil];
         } else {
-            [self->task success:files.firstObject.scriptObject];
+            [self->task success:[files.firstObject toScriptObject]];
         }
 
         self->me = nil;
