@@ -14,7 +14,7 @@ var api_error = function (api) {
 
 // TODO looks like we're losing this, maybe move some of it to the capture module
 // permissions module native code has to be baked into the file module to avoid app store rejections
-if (false && forge.is.ios()) {
+/*if (false && forge.is.ios()) {
     if (!forge.permissions) {
         forge.permissions = {
             check: function (permission, success, error) {
@@ -79,8 +79,10 @@ if (false && forge.is.ios()) {
         };
         askQuestion("If prompted, allow the permission request", { Ok: runTest });
     });
-}
+}*/
 
+
+// - media pickers ------------------------------------------------------------
 
 asyncTest("Select image from gallery and check file info", 2, function() {
     var runTest = function () {
@@ -98,14 +100,8 @@ asyncTest("Select image from gallery and check file info", 2, function() {
                                     start();
                                 }
                             });
-            }, function (e) {
-                ok(false, "forge.file.info error: " + e.message);
-                start();
-            });
-        }, function (e) {
-            ok(false, "forge.file.getImage error: " + e.message);
-            start();
-        });
+            }, api_error("file.info"));
+        }, api_error("file.getImage"));
     };
     askQuestion("When prompted select an image from the gallery", { Ok: runTest });
 });
@@ -165,22 +161,18 @@ asyncTest("Embedding video in webview", 1, function() {
             forge.file.URL(file, function (url) {
                 askQuestion("Did your video just play: <video controls autoplay playsinline width=192 src='" + url + "'></video>", {
                     Yes: function () {
-                        ok(true, "video capture successful");
+                        ok(true, "video playback successful");
                         start();
                     }, No: function () {
-                        ok(false, "didn't play back just-captured video");
+                        ok(false, "video playback failed");
                         start();
                     }
                 });
             }, api_error("file.URL"));
-        }, function (e) {
-            ok(false, "API call failure: "+e.message);
-            start();
-        });
+        }, api_error("file.getVideo"));
     };
     askQuestion("When prompted select a video from the gallery", { Ok: runTest });
 });
-
 
 
 asyncTest("Cancel", 1, function() {
@@ -189,13 +181,15 @@ asyncTest("Cancel", 1, function() {
             ok(false, "forge.file.getImage returned success");
             start();
         }, function (e) {
-            ok(true, "API error callback: "+e.message);
+            ok(true, "User pressed cancel");
             start();
         });
     };
     askQuestion("In this test press back or cancel rather than choosing an image", { Ok: runTest });
 });
 
+
+// - operations on urls -------------------------------------------------------
 
 asyncTest("File cache - With delete", 6, function () {
     askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg'>", { Yes: function () {
@@ -212,28 +206,18 @@ asyncTest("File cache - With delete", 6, function () {
                             ok(!exists, "File deleted");
                             start();
                         });
-                    }, function (e) {
-                        ok(false, "API error callback: "+e.message);
-                        start();
-                    });
+                    }, api_error("file.remove"));
                 }, No: function () {
                     ok(false, "User claims failure");
                     start();
                 }});
-            }, function (e) {
-                ok(false, "API error callback: "+e.message);
-                start();
-            });
-        }, function (e) {
-            ok(false, "API error callback: "+e.message);
-            start();
-        });
+            }, api_error("file.URL"));
+        }, api_error("file.cacheURL"));
     }, No: function () {
         ok(false, "Image not loaded");
         start();
     }});
 });
-
 
 asyncTest("File saving", 4, function () {
     askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-t.png'>", { Yes: function () {
@@ -249,14 +233,8 @@ asyncTest("File saving", 4, function () {
                     ok(false, "User claims failure");
                     start();
                 }});
-            }, function (e) {
-                ok(false, "API error callback: "+e.message);
-                start();
-            });
-        }, function (e) {
-            ok(false, "API error callback: "+e.message);
-            start();
-        });
+            }, api_error("file.URL"));
+        }, api_error("file.saveURL"));
     }, No: function () {
         ok(false, "Image not loaded");
         start();
@@ -264,23 +242,34 @@ asyncTest("File saving", 4, function () {
 });
 
 
+// - operations on filesystem -------------------------------------------------
+
+function showStorageSizeInformation(size) {
+    var meg = Math.pow(1024, 2);
+    var gig = Math.pow(1024, 3);
+
+    var message = "Device storage size information: <ul>";
+    message += "<li>Total: " + size.total / gig + " GB</li>";
+    message += "<li>Free: " + size.free / gig + " GB</li>";
+    message += "<li>App: " + size.app / meg + " MB</li>";
+    message += "<li>Endpoints:";
+    message += "  <ul>";
+    message += "    <li>/forge: " + size.endpoints.forge / meg + " MB</li>";
+    message += "    <li>/src: " + size.endpoints.source / meg + " MB</li>";
+    message += "    <li>/temporary: " + size.endpoints.temporary / meg + " MB</li>";
+    message += "    <li>/permanent: " + size.endpoints.permanent / meg + " MB</li>";
+    message += "    <li>/documents: " + size.endpoints.documents / meg + " MB</li>";
+    message += "  </ul>";
+    message += "</ul>";
+
+    return message;
+}
+
+
 asyncTest("Device storage", 1, function () {
     forge.file.getStorageSizeInformation(function (size) {
-        var msg = "Device storage size information: <ul>";
-        var meg = Math.pow(1024, 2);
-        var gig = Math.pow(1024, 3);
-        msg += "<li>Total: " + size.total / gig + " GB</li>";
-        msg += "<li>Free: " + size.free / gig + " GB</li>";
-        msg += "<li>App: " + size.app / meg + " MB</li>";
-        msg += "<li>Endpoints:";
-        msg += "  <ul>";
-        msg += "    <li>/forge: " + size.endpoints.forge / meg + " MB</li>";
-        msg += "    <li>/src: " + size.endpoints.source / meg + " MB</li>";
-        msg += "    <li>/temporary: " + size.endpoints.temporary / meg + " MB</li>";
-        msg += "    <li>/permanent: " + size.endpoints.permanent / meg + " MB</li>";
-        msg += "    <li>/documents: " + size.endpoints.documents / meg + " MB</li>";
-        msg += "  </ul>";
-        msg += "</ul>Does this look correct?";
+        var msg = showStorageSizeInformation(size);
+        msg += "Does this look correct?";
         askQuestion(msg, {
             Yes: function () {
                 ok(true, "Success with forge.file.getStorageSizeInformation");
@@ -291,46 +280,30 @@ asyncTest("Device storage", 1, function () {
                 start();
             }
         });
-    }, function (e) {
-        ok(false, "API call failure: "+e.message);
-        start();
-    });
+    }, api_error("file.getStorageSizeInformation"));
 });
 
 
-asyncTest("File cache - With clearCache", 6, function () {
-    askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg'>", { Yes: function () {
-        ok(true, "Image loaded from trigger.io");
-        forge.file.cacheURL("https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg", function (file) {
-            ok(true, "file.cacheURL claims success");
-            forge.file.URL(file, function (url) {
-                ok(true, "file.URL claims success");
-                askQuestion("Is this the same image:<br><img src='" + url + "'>", { Yes: function () {
-                    ok(true, "Image cached correctly");
-                    forge.file.clearCache(function () {
-                        ok(true, "file.clearCache claims success");
-                        forge.file.isFile(file, function (exists) {
-                            ok(!exists, "File deleted");
-                            start();
-                        });
-                    }, function (e) {
-                        ok(false, "API error callback: "+e.message);
+asyncTest("Clear Cache", 3, function () {
+    var runTest = function () {
+        forge.file.clearCache(function () {
+            ok(true);
+            forge.file.getStorageSizeInformation(function (size) {
+                ok(true);
+                var msg = showStorageSizeInformation(size);
+                msg += "Does this look correct?";
+                askQuestion(msg, {
+                    Yes: function () {
+                        ok(true, "Success with forge.file.getStorageSizeInformation");
                         start();
-                    });
-                }, No: function () {
-                    ok(false, "User claims failure");
-                    start();
-                }});
-            }, function (e) {
-                ok(false, "API error callback: "+e.message);
-                start();
-            });
-        }, function (e) {
-            ok(false, "API error callback: "+e.message);
-            start();
-        });
-    }, No: function () {
-        ok(false, "Image not loaded");
-        start();
-    }});
+
+                    }, No: function () {
+                        ok(false, "User claims failure with forge.file.getStorageSizeInformation");
+                        start();
+                    }
+                });
+            }, api_error("file.getStorageSizeInformation"));
+        }, api_error("file.clearCache"));
+    };
+    askQuestion("Click ok to clear the device cache and show device storage size information again", { Ok: runTest });
 });
