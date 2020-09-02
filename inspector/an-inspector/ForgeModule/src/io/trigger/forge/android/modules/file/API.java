@@ -1,9 +1,11 @@
 package io.trigger.forge.android.modules.file;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
+import android.webkit.MimeTypeMap;
 
 import com.google.gson.JsonObject;
 import com.llamalab.safs.Paths;
@@ -25,6 +27,7 @@ import io.trigger.forge.android.core.ForgeActivity.EventAccessBlock;
 import io.trigger.forge.android.core.ForgeApp;
 import io.trigger.forge.android.core.ForgeFile;
 import io.trigger.forge.android.core.ForgeIntentResultHandler;
+import io.trigger.forge.android.core.ForgeLog;
 import io.trigger.forge.android.core.ForgeParam;
 import io.trigger.forge.android.core.ForgeStorage;
 import io.trigger.forge.android.core.ForgeTask;
@@ -37,43 +40,52 @@ public class API {
     //region media picker
 
     public static void getImage(final ForgeTask task) {
-        final Runnable picker = new Runnable() {
+        ForgeIntentResultHandler resultHandler = new ForgeIntentResultHandler() {
             @Override
-            public void run() {
-                ForgeApp.getActivity().requestPermission("com.google.android.apps.photos.permission.GOOGLE_PHOTOS", new EventAccessBlock() {
-                    @Override
-                    public void run(boolean granted) {
-                        // TODO ignore 'granted' as not all devices have this permission and there does not seem to be a way to check for it
-                        Intent intent = new Intent(Intent.ACTION_PICK);
-                        intent.setType("image/*");
-                        ForgeIntentResultHandler handler = new ForgeIntentResultHandler() {
-                            @Override
-                            public void result(int requestCode, int resultCode, Intent data) {
-                                if (resultCode == RESULT_OK) {
-                                    Uri uri = data.getData();
-                                    // save it & return it
-                                    // TODO task.success(ForgeFile.fixImageUri(uri).toString());
-                                } else if (resultCode == RESULT_CANCELED) {
-                                    task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
-                                } else {
-                                    task.error("Unknown error capturing image", "UNEXPECTED_FAILURE", null);
-                                }
-                            }
-                        };
-                        ForgeApp.intentWithHandler(intent, handler);
+            public void result(int requestCode, int resultCode, Intent data) {
+                if (resultCode == RESULT_OK) {
+                    Uri source = data.getData();
+                    try {
+                        ContentResolver contentResolver = ForgeApp.getActivity().getContentResolver();
+
+                        String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(source));
+                        String filename = ForgeStorage.temporaryFileNameWithExtension(extension);
+                        ForgeFile forgeFile = new ForgeFile(ForgeStorage.EndpointId.Temporary, filename);
+                        File destination = Paths.get(ForgeStorage.getNativeURL(forgeFile).getPath()).toFile();
+
+                        FileInputStream inputStream = (FileInputStream)contentResolver.openInputStream(source);
+                        FileChannel sourceChannel = inputStream.getChannel();
+                        FileChannel destinationChannel = new FileOutputStream(destination).getChannel();
+                        destinationChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+                        sourceChannel.close();
+                        destinationChannel.close();
+
+                        task.success(forgeFile.toScriptObject());
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        task.error("Error saving image to app storage: " + e.getLocalizedMessage(), "EXPECTED_FAILURE", null);
                     }
-                });
+                } else if (resultCode == RESULT_CANCELED) {
+                    task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
+                } else {
+                    task.error("Unknown error capturing image", "UNEXPECTED_FAILURE", null);
+                }
             }
         };
 
-        ForgeApp.getActivity().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new EventAccessBlock() {
+        ForgeApp.getActivity().requestPermission("com.google.android.apps.photos.permission.GOOGLE_PHOTOS", new EventAccessBlock() {
             @Override
             public void run(boolean granted) {
-                if (!granted) {
-                    task.error("Permission denied. User didn't grant access to storage.", "EXPECTED_FAILURE", null);
-                    return;
-                }
-                picker.run();
+                // ignore 'granted' as not all devices have this permission and we can't check if they do
+                task.withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(Intent.ACTION_PICK);
+                        intent.setType("image/*");
+                        ForgeApp.intentWithHandler(intent, resultHandler);
+                    }
+                });
             }
         });
     }
