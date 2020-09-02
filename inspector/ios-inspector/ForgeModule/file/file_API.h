@@ -18,7 +18,7 @@
 + (void)getScriptPath:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)getScriptURL:(ForgeTask*)task file:(NSDictionary*)file;
 
-+ (void)isFile:(ForgeTask*)task file:(NSDictionary*)file;
++ (void)exists:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)info:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)base64:(ForgeTask*)task file:(NSDictionary*)file;
 + (void)string:(ForgeTask*)task file:(NSDictionary*)file;
