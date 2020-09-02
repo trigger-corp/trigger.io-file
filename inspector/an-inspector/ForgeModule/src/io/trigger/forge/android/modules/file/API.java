@@ -40,6 +40,16 @@ public class API {
     //region media picker
 
     public static void getImage(final ForgeTask task) {
+        // TODO image size
+        API.pickMedia(task, "image/*");
+    }
+
+    public static void getVideo(final ForgeTask task) {
+        // TODO video quality
+        API.pickMedia(task, "video/*");
+    }
+
+    private static void pickMedia(final ForgeTask task, final String type) {
         ForgeIntentResultHandler resultHandler = new ForgeIntentResultHandler() {
             @Override
             public void result(int requestCode, int resultCode, Intent data) {
@@ -82,78 +92,10 @@ public class API {
                     @Override
                     public void run() {
                         Intent intent = new Intent(Intent.ACTION_PICK);
-                        intent.setType("image/*");
+                        intent.setType(type);
                         ForgeApp.intentWithHandler(intent, resultHandler);
                     }
                 });
-            }
-        });
-    }
-
-    public static void getVideo(final ForgeTask task) {
-        final Runnable picker = new Runnable() {
-            @Override
-            public void run() {
-                ForgeApp.getActivity().requestPermission("com.google.android.apps.photos.permission.GOOGLE_PHOTOS", new EventAccessBlock() {
-                    @Override
-                    public void run(boolean granted) {
-                        // TODO ignore 'granted' as not all devices have this permission and there does not seem to be a way to check for it
-                        Intent intent = new Intent(Intent.ACTION_PICK);
-                        intent.setType("video/*");
-                        ForgeIntentResultHandler handler = new ForgeIntentResultHandler() {
-                            @Override
-                            public void result(int requestCode, int resultCode, Intent data) {
-                                if (resultCode == RESULT_OK) {
-                                    // check if we need to transcode the video
-                                    String videoQuality = task.params.has("videoQuality") ? task.params.get("videoQuality").getAsString() : "default";
-                                    if (!videoQuality.equalsIgnoreCase("default")) {
-                                        // TODO transcode video once min API level hits 18 and we can rely on MediaCodec being present
-                                    }
-
-                                    Uri uri = data.getData();
-                                    if (!uri.toString().startsWith("content://com.google.android.apps.photos.contentprovider")) {
-                                        task.success(data.toUri(0));
-                                        return;
-                                    }
-
-                                    // If this file comes from Google Photos we to need to cache it locally
-                                    // as Marshmallow's braindead permissions model won't let it be used
-                                    // by external intents.
-                                    String filename = "temp_forge_file_video_" + (new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()));
-                                    File output = null;
-                                    try {
-                                        output = File.createTempFile(filename, "mp4");
-                                        FileInputStream input = (FileInputStream) ForgeApp.getActivity().getContentResolver().openInputStream(uri);
-                                        FileChannel src = input.getChannel();
-                                        FileChannel dst = new FileOutputStream(output).getChannel();
-                                        dst.transferFrom(src, 0, src.size());
-                                        src.close();
-                                        dst.close();
-                                        task.success(Uri.fromFile(output).toString());
-                                    } catch (IOException e) {
-                                        task.error("Error retrieving video: " + e.getLocalizedMessage(), "UNEXPECTED_FAILURE", null);
-                                    }
-                                } else if (resultCode == RESULT_CANCELED) {
-                                    task.error("User cancelled video capture", "EXPECTED_FAILURE", null);
-                                } else {
-                                    task.error("Unknown error capturing video", "UNEXPECTED_FAILURE", null);
-                                }
-                            }
-                        };
-                        ForgeApp.intentWithHandler(intent, handler);
-                    }
-                });
-            }
-        };
-
-        ForgeApp.getActivity().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new EventAccessBlock() {
-            @Override
-            public void run(boolean granted) {
-                if (!granted) {
-                    task.error("Permission denied. User didn't grant access to storage.", "EXPECTED_FAILURE", null);
-                    return;
-                }
-                picker.run();
             }
         });
     }
