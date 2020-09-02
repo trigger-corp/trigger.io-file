@@ -10,10 +10,12 @@ import com.llamalab.safs.Paths;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -156,7 +158,7 @@ public class API {
      * @return A File like: { endpoint: "/src", resource: "/path/to/local/resource.html" }
      */
     public static void getFileFromSourceDirectory(final ForgeTask task, @ForgeParam("resource") final String resource) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(ForgeStorage.EndpointId.Source, resource);
@@ -175,7 +177,7 @@ public class API {
         if (resource.startsWith("http://") || resource.startsWith("https://")) {
             task.success(resource);
         }
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(ForgeStorage.EndpointId.Source, resource);
@@ -196,7 +198,7 @@ public class API {
      * @return an absolute path like: /endpoint/with/path/to/resource.html
      */
     public static void getScriptPath(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(file);
@@ -212,7 +214,7 @@ public class API {
      * @return an absolute URL like: https://localhost:1234/tmp/path/to/resource.html
      */
     public static void getScriptURL(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(file);
@@ -222,7 +224,7 @@ public class API {
     }
 
     public static void exists(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(file);
@@ -232,7 +234,7 @@ public class API {
     }
 
     public static void info(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 task.performAsync(new Runnable() {
@@ -254,7 +256,7 @@ public class API {
     }
 
     public static void base64(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 task.performAsync(new Runnable() {
@@ -274,7 +276,7 @@ public class API {
     }
 
     public static void string(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 task.performAsync(new Runnable() {
@@ -294,7 +296,7 @@ public class API {
     }
 
     public static void remove(final ForgeTask task, @ForgeParam("file") final JsonObject file) {
-        API.withWritePermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 ForgeFile forgeFile = new ForgeFile(file);
@@ -314,40 +316,12 @@ public class API {
     //region operations on urls
 
     public static void cacheURL(final ForgeTask task, @ForgeParam("url") final String url) {
-        API.writeURL(task, url, ForgeStorage.EndpointId.Temporary);
-    }
-
-    public static void saveURL(final ForgeTask task, @ForgeParam("url") final String url) {
-        API.writeURL(task, url, ForgeStorage.EndpointId.Permanent);
-    }
-
-    private static void writeURL(final ForgeTask task, @ForgeParam("url") final String url, ForgeStorage.EndpointId endpointId) {
-        Uri source = Uri.parse(url);
-
-        String filename = ForgeStorage.temporaryFileNameWithExtension(source.getLastPathSegment());
-        ForgeFile forgeFile = new ForgeFile(endpointId, filename);
-        File destination = Paths.get(ForgeStorage.getNativeURL(forgeFile).getPath()).toFile();
-
-        API.withWritePermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 try {
-                    InputStream inputStream = new URL(source.toString()).openStream();
-                    try {
-                        OutputStream outputStream = new FileOutputStream(destination);
-                        try {
-                            byte[] buffer = new byte[1024];
-                            int bytesRead = 0;
-                            while ((bytesRead = inputStream.read(buffer, 0, buffer.length)) >= 0) {
-                                outputStream.write(buffer, 0, bytesRead);
-                            }
-                            task.success(forgeFile.toScriptObject());
-                        } finally {
-                            outputStream.close();
-                        }
-                    } finally {
-                        inputStream.close();
-                    }
+                    ForgeFile forgeFile = API.writeURL(url, ForgeStorage.EndpointId.Temporary);
+                    task.success(forgeFile.toScriptObject());
                 } catch (IOException e) {
                     e.printStackTrace();
                     task.error("Unable to cache url: " + url);
@@ -356,17 +330,58 @@ public class API {
         });
     }
 
+    public static void saveURL(final ForgeTask task, @ForgeParam("url") final String url) {
+        task.withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ForgeFile forgeFile = API.writeURL(url, ForgeStorage.EndpointId.Permanent);
+                    task.success(forgeFile.toScriptObject());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    task.error("Unable to write url: " + url);
+                }
+            }
+        });
+    }
+
+    private static ForgeFile writeURL(final String url, ForgeStorage.EndpointId endpointId) throws IOException {
+        Uri source = Uri.parse(url);
+
+        String filename = ForgeStorage.temporaryFileNameWithExtension(source.getLastPathSegment());
+        ForgeFile forgeFile = new ForgeFile(endpointId, filename);
+        File destination = Paths.get(ForgeStorage.getNativeURL(forgeFile).getPath()).toFile();
+
+        InputStream inputStream = new URL(source.toString()).openStream();
+        try {
+            OutputStream outputStream = new FileOutputStream(destination);
+            try {
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
+                while ((bytesRead = inputStream.read(buffer, 0, buffer.length)) >= 0) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                outputStream.close();
+            }
+        } finally {
+            inputStream.close();
+        }
+
+        return forgeFile;
+    }
+
     //endregion operations on urls
 
 
     //region operations on filesystem
 
     public static void clearCache(final ForgeTask task) {
-        API.withWritePermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 File temporaryDirectory = new File(ForgeStorage.Directories.Temporary().getPath());
-                for (java.io.File file : temporaryDirectory.listFiles()) {
+                for (File file : temporaryDirectory.listFiles()) {
                     file.delete();
                 }
                 task.success();
@@ -375,7 +390,7 @@ public class API {
     }
 
     public static void getStorageSizeInformation(final ForgeTask task) {
-        API.withReadPermission(task, new Runnable() {
+        task.withPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new Runnable() {
             @Override
             public void run() {
                 task.performAsync(new Runnable() {
@@ -394,35 +409,4 @@ public class API {
     }
 
     //endregion operations on filesystem
-
-
-    //region permissions
-
-    private static void withReadPermission(final ForgeTask task, Runnable completion) {
-        ForgeApp.getActivity().requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, new EventAccessBlock() {
-            @Override
-            public void run(boolean granted) {
-                if (!granted) {
-                    task.error("Permission denied. User didn't grant access to storage.", "EXPECTED_FAILURE", null);
-                    return;
-                }
-                completion.run();
-            }
-        });
-    }
-
-    private static void withWritePermission(final ForgeTask task, Runnable completion) {
-        ForgeApp.getActivity().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, new EventAccessBlock() {
-            @Override
-            public void run(boolean granted) {
-                if (!granted) {
-                    task.error("Permission denied. User didn't grant access to storage.", "EXPECTED_FAILURE", null);
-                    return;
-                }
-                completion.run();
-            }
-        });
-    }
-
-    //endregion permissions
 }
