@@ -48,11 +48,9 @@ usage_description
 
 The optional parameters can contain any combination of the following:
 
--  ``width`` (number): The maximum height of the image when used, if the returned
-   image is larger than this it will be automatically resized before
-   display. The stored image will not be resized.
--  ``height`` (number): As ``width`` but sets a maximum height, both ``height``
-   and ``width`` can be set.
+-  ``width``  (number): The maximum height of the image returned.
+-  ``height`` (number): The maximum width of the image returned.
+-  ``fixRotation`` (boolean): Checks the image's EXIF metadata and correctly rotate the image if needed.
 
 Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
@@ -65,12 +63,11 @@ Returned files are stored in a temporary location and may be deleted by the devi
 
 The optional parameters can contain any combination of the following:
 
-- ``videoQuality``: Sets the video quality. Valid options are: `"default"`, `"low"`, "`medium`" and `"high"`.
-- ``videoDuration``: If the user records a new video then the video duration will be limited to the given length in seconds.
+- ``videoQuality``: Sets the returned video's quality. Valid options are: `"default"`, `"low"`, "`medium`" and `"high"`.  (iOS only)
 
 Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
-Please note that it is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it van vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for device content sources.
+Please note that it is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it can vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for device content sources.
 
 
 ### Operations on Paths
@@ -94,7 +91,7 @@ Please note that it is hard to predict the quantifiable properties of videos tha
 !method: forge.file.getScriptURL(file, success, error)
 !param: file `file` the file object to load data from
 !param: success `function(url)` callback to be invoked when no errors occur (argument is the file URL)
-!description: Returns a URL which can be used to display an image. Height and width will be limited by the values given when originally selecting the image.
+!description: Returns a URL which can be used to access the content via Javascript or Web View.
 !platforms: iOS, Android
 !param: error `function(content)` called with details of any error which may occur
 
