@@ -106,12 +106,38 @@ asyncTest("Select image from gallery and check file info", 2, function() {
     askQuestion("When prompted select an image from the gallery", { Ok: runTest });
 });
 
+asyncTest("Select resized image from gallery and check file info", 2, function() {
+    var runTest = function () {
+        forge.file.getImage({
+            width: 256,
+            height: 256
+        }, function (file) {
+            forge.file.info(file, function (info) {
+                ok(true, "file.info claims success");
+                askQuestion("Does the following file information describe the file: " +
+                            JSON.stringify(info), {
+                                Yes: function () {
+                                    ok(true, "File information is correct");
+                                    start();
+                                },
+                                No: function () {
+                                    ok(false, "User claims failure");
+                                    start();
+                                }
+                            });
+            }, api_error("file.info"));
+        }, api_error("file.getImage"));
+    };
+    askQuestion("When prompted select an image from the gallery", { Ok: runTest });
+});
+
 
 asyncTest("Gallery", 4, function() {
     var runTests = function () {
         forge.file.getImage({
-            width: 100,
-            height: 100
+            width: 256,
+            height: 256,
+            fixRotation: true
         }, function (file) {
             askQuestion("Were you just prompted to select an image?", { Yes: function () {
                 ok(true, "Success");
@@ -124,12 +150,12 @@ asyncTest("Gallery", 4, function() {
                     forge.file.URL(file, function (url) {
                         askQuestion("Is this your image:<br><img src='" +
                                     url +
-                                    "' style='max-width: 100px; max-height: 100px'>", { Yes: function () {
+                                    "' style='max-width: 512px; max-height: 512px'>", { Yes: function () {
                             ok(true, "Success with forge.file.URL");
                             forge.file.base64(file, function (data) {
                                 askQuestion("Is this also your image:<br><img src='data:image/jpg;base64," +
                                             data +
-                                            "' style='max-width:100px; max-height:100px'>", { Yes: function () {
+                                            "' style='max-width:512px; max-height:512px'>", { Yes: function () {
                                     ok(true, "Success with forge.file.base64");
                                     start();
                                 }, No: function () {
@@ -159,7 +185,7 @@ asyncTest("Embedding video in webview", 1, function() {
             videoQuality: "low"
         }, function (file) {
             forge.file.URL(file, function (url) {
-                askQuestion("Did your video just play: <video controls autoplay playsinline width=192 src='" + url + "'></video>", {
+                askQuestion("Did your video just play: <video controls autoplay playsinline style='max-width:512px; max-height:512px' src='" + url + "'></video>", {
                     Yes: function () {
                         ok(true, "video playback successful");
                         start();
