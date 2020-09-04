@@ -54,7 +54,7 @@
 - (void) picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
     int width = task.params[@"width"] ? [task.params[@"width"] intValue] : 0;
     int height = task.params[@"height"] ? [task.params[@"height"] intValue] : 0;
-    NSString *videoQuality = task.params[@"videoQuality"] ? [task.params[@"videoQuality"] stringValue] : @"default";
+    NSString *videoQuality = task.params[@"videoQuality"] ? (NSString*)task.params[@"videoQuality"] : @"default";
     
     [picker dismissViewControllerAnimated:YES completion:^{
         if (results.count == 0) {
@@ -71,7 +71,7 @@
                 file = [self saveImageForResultSync:result maxWidth:width maxHeight:height error:&error];
                 
             } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
-                file = [self saveVideoForResultSync:result error:&error];
+                file = [self saveVideoForResultSync:result videoQuality:videoQuality error:&error];
             }
 
             if (error != nil) {
@@ -129,7 +129,7 @@
 }
 
 
-- (ForgeFile*)saveVideoForResultSync:(PHPickerResult*)result error:(NSError**)error {
+- (ForgeFile*)saveVideoForResultSync:(PHPickerResult*)result videoQuality:(NSString*)videoQuality error:(NSError**)error {
     __block ForgeFile *ret = nil;
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 

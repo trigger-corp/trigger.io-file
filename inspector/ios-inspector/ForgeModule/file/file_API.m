@@ -22,11 +22,11 @@
 #pragma mark media picker
 
 + (void)getImage:(ForgeTask*)task {
-    // TODO handle options: width, height
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = 1;
         configuration.filter = PHPickerFilter.imagesFilter;
+        configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible;
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
         [delegate openPicker];
     } else {
@@ -37,7 +37,6 @@
 
 
 + (void)getVideo:(ForgeTask*)task {
-    // TODO handle options: quality
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = 1;
@@ -45,6 +44,7 @@
             PHPickerFilter.videosFilter,
             // TODO PHPickerFilter.livePhotosFilter 
         ]];
+        configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible;
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
         [delegate openPicker];
     } else {

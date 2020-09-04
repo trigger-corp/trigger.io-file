@@ -61,40 +61,10 @@
 }
 
 
-- (void) imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo_old:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info {
-    [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
-        PHAsset *asset = [info objectForKey:UIImagePickerControllerPHAsset];
-        if (asset == nil) {
-            [self->task error:[NSString stringWithFormat:@"ForgeFile could not locate an asset with reference url: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
-            return;
-        }
-
-        if (asset.mediaType == PHAssetMediaTypeImage) {
-            // 4. Select a gallery image and return a reference to the image
-            NSString *ret = [NSString stringWithFormat:@"photo-library://image/%@?ext=JPG", [asset localIdentifier]];
-            [self->task success:ret]; // photo-library://image/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=JPG
-
-        } else if (asset.mediaType == PHAssetMediaTypeVideo) {
-            // 5. Select a gallery video, potentially transcode it and return a reference to the video
-            NSString *videoQuality = [self->task.params objectForKey:@"videoQuality"] ? [self->task.params objectForKey:@"videoQuality"] : @"default";
-            if ([videoQuality isEqualToString:@"default"]) {
-                NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
-                [self->task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
-            } else {
-                [file_Storage transcode:asset withTask:self->task videoQuality:videoQuality]; // /path/to/video
-            }
-
-        } else {
-            [self->task error:[NSString stringWithFormat:@"Unknown media type for selection: %@", [info objectForKey:@"UIImagePickerControllerReferenceURL"]]];
-        }
-    }];
-}
-
-
 - (void) imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info {
     int width = task.params[@"width"] ? [task.params[@"width"] intValue] : 0;
     int height = task.params[@"height"] ? [task.params[@"height"] intValue] : 0;
-    NSString *videoQuality = task.params[@"videoQuality"] ? [task.params[@"videoQuality"] stringValue] : @"default";
+    NSString *videoQuality = task.params[@"videoQuality"] ? (NSString*)task.params[@"videoQuality"] : @"default";
 
     [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
         NSError *error = nil;
@@ -110,7 +80,7 @@
             forgeFile = [file_Storage writeUIImageToTemporaryFile:image maxWidth:width maxHeight:height error:&error];
             
         } else if ([type isEqualToString:(NSString*)kUTTypeMovie]) {
-            forgeFile = [self saveVideoForInfo:info error:&error];
+            forgeFile = [self saveVideoForInfo:info videoQuality:videoQuality error:&error];
             
         } else {
             return [self->task error:[NSString stringWithFormat:@"Unsupported media type: %@", type] type:@"UNEXPECTED_FAILURE" subtype:nil];
@@ -127,7 +97,7 @@
 
 #pragma mark helpers
 
-- (ForgeFile*)saveVideoForInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info error:(NSError**)error {
+- (ForgeFile*)saveVideoForInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info videoQuality:(NSString*)videoQuality error:(NSError**)error {
     NSURL *source = [info objectForKey:UIImagePickerControllerMediaURL];
     if (source == nil) {
         *error = [NSError errorWithDomain:ForgeErrorDomain
