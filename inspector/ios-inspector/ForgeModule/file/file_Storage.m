@@ -10,14 +10,21 @@
 
 @implementation file_Storage
 
-
-+ writeMediaToTemporaryFile {
-    return nil;
++ (ForgeFile*)writeUIImageToTemporaryFile:(UIImage*)image maxWidth:(int)maxWidth maxHeight:(int)maxHeight error:(NSError**)error {
+    if (maxWidth > 0 || maxHeight > 0) {
+        image = [image imageWithWidth:maxWidth andHeight:maxHeight];
+    }
+    
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
+                                            resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
+    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
+    
+    [UIImageJPEGRepresentation(image, 0.9) writeToURL:destination atomically:YES];
+    [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
+    
+    return forgeFile;
 }
 
-+ (ForgeFile*)writeUIImageToTemporaryFile:(UIImage*)image fixRotation:(BOOL)fixRotation maxWidth:(int)maxWidth maxHeight:(int)maxHeight {
-    return nil;
-}
 
 + (ForgeFile*)writeVideoToTemporaryFile:(PHAsset*)asset withTask:(ForgeTask*)task videoQuality:(NSString*)videoQuality {
     return nil;

@@ -12,6 +12,7 @@
 #import <ForgeCore/ForgeStorage.h>
 #import <ForgeCore/NSString+Hex.h>
 
+#import "file_Storage.h"
 #import "file_PHPickerDelegate.h"
 
 
@@ -51,6 +52,10 @@
 
 
 - (void) picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
+    int width = task.params[@"width"] ? [task.params[@"width"] intValue] : 0;
+    int height = task.params[@"height"] ? [task.params[@"height"] intValue] : 0;
+    NSString *videoQuality = task.params[@"videoQuality"] ? [task.params[@"videoQuality"] stringValue] : @"default";
+    
     [picker dismissViewControllerAnimated:YES completion:^{
         if (results.count == 0) {
             [self->task error:@"Image selection cancelled" type:@"EXPECTED_FAILURE" subtype:nil];
@@ -63,7 +68,8 @@
         [results enumerateObjectsUsingBlock:^(PHPickerResult *result, NSUInteger index, BOOL *stop) {
             ForgeFile *file = nil;
             if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeImage.identifier]) {
-                file = [self saveImageForResultSync:result error:&error];
+                file = [self saveImageForResultSync:result maxWidth:width maxHeight:height error:&error];
+                
             } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
                 file = [self saveVideoForResultSync:result error:&error];
             }
@@ -93,7 +99,7 @@
 
 #pragma mark helpers
 
-- (ForgeFile*)saveImageForResultSync:(PHPickerResult*)result error:(NSError**)error {
+- (ForgeFile*)saveImageForResultSync:(PHPickerResult*)result maxWidth:(int)maxWidth maxHeight:(int)maxHeight error:(NSError**)error {
     if (![result.itemProvider canLoadObjectOfClass:[UIImage class]]) {
         *error = [NSError errorWithDomain:NSItemProviderErrorDomain
                                     code:NSItemProviderUnavailableCoercionError
@@ -107,20 +113,12 @@
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
-
-        // TODO handle live photos
-
         [result.itemProvider loadObjectOfClass:([UIImage class]) completionHandler:^(UIImage* image, NSError* error) {
             if (error != nil) {
                 error_ret = error;
 
             } else {
-                ret = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
-                                       resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
-                
-                NSURL *destination = [ForgeStorage nativeURL:ret];
-                [UIImageJPEGRepresentation(image, 0.9) writeToURL:destination atomically:YES];
-                [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
+                ret = [file_Storage writeUIImageToTemporaryFile:image maxWidth:maxWidth maxHeight:maxHeight error:&error_ret];
             }
             dispatch_semaphore_signal(semaphore);
         }];
@@ -136,6 +134,9 @@
     __block NSError *error_ret = nil; // avoid capturing loadObjectOfClass's NSError
 
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0); { // perform operation synchronously
+        
+        // TODO handle live photos
+
         [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeQuickTimeMovie.identifier completionHandler:^(NSURL* _Nullable url, NSError * _Nullable error) {
             if (error != nil) {
                 error_ret = error;

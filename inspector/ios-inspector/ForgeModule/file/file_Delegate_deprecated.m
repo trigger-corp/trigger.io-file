@@ -11,7 +11,7 @@
 
 #import <ForgeCore/ForgeError.h>
 
-#import "file_Util.h"
+#import "file_Storage.h"
 #import "file_UIImagePickerController.h"
 
 #import "file_Delegate_deprecated.h"
@@ -43,45 +43,12 @@
 
     picker.imageExportPreset = UIImagePickerControllerImageURLExportPresetCompatible;
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-
-    // Video or Photo
-    picker.mediaTypes = [NSArray arrayWithObjects:type, nil];
-
-    /*if ([type isEqual:(NSString*)kUTTypeMovie] && picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
-        if ([task.params objectForKey:@"videoDuration"] && [task.params objectForKey:@"videoDuration"] != nil) {
-            picker.videoMaximumDuration = [[task.params objectForKey:@"videoDuration"] doubleValue];
-        }
-        NSString *videoQuality = @"high";
-        if ([task.params objectForKey:@"videoQuality"] && [task.params objectForKey:@"videoQuality"] != nil) {
-            videoQuality = [task.params objectForKey:@"videoQuality"];
-        }
-        if ([videoQuality isEqualToString:@"high"]) {
-            picker.videoQuality = UIImagePickerControllerQualityTypeHigh;
-        } else if ([videoQuality isEqualToString:@"medium"]) {
-            picker.videoQuality = UIImagePickerControllerQualityTypeMedium;
-        } else {
-            picker.videoQuality = UIImagePickerControllerQualityTypeLow;
-        }
-    }*/
+    picker.mediaTypes = [NSArray arrayWithObjects:self->type, nil];
     picker.delegate = self;
 
-    // As of iOS 11 UIImagePickerController runs out of process and we can no longer rely on getting permission request dialogs automatically
-    /*[PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-        if (status != PHAuthorizationStatusAuthorized) {
-            [self->task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
-            return;
-        }*/
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
-        });
-    //}];
-}
-
-// TODO lose this
-- (void)closePicker:(void (^ __nullable)(void))success {
-    [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
-        if (success != nil) success();
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
+    });
 }
 
 
@@ -114,7 +81,7 @@
                 NSString *ret = [NSString stringWithFormat:@"photo-library://video/%@?ext=MOV", [asset localIdentifier]];
                 [self->task success:ret]; // photo-library://video/5B345FEF-30D7-41C3-BC4E-E11A9F6B4F42/L0/001?ext=MOV
             } else {
-                [file_Util transcode:asset withTask:self->task videoQuality:videoQuality]; // /path/to/video
+                [file_Storage transcode:asset withTask:self->task videoQuality:videoQuality]; // /path/to/video
             }
 
         } else {
@@ -124,20 +91,23 @@
 }
 
 
-/**
- * Two cases:
- *
- * 1. Gallery Image                 => url (photo-library://image/5B345FEF...) => data [x]
- * 2. Gallery Video                 => url (photo-library://video/5B345FEF...) => data [a]
- */
 - (void) imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info {
+    int width = task.params[@"width"] ? [task.params[@"width"] intValue] : 0;
+    int height = task.params[@"height"] ? [task.params[@"height"] intValue] : 0;
+    NSString *videoQuality = task.params[@"videoQuality"] ? [task.params[@"videoQuality"] stringValue] : @"default";
+
     [[[ForgeApp sharedApp] viewController] dismissViewControllerAnimated:YES completion:^{
         NSError *error = nil;
         ForgeFile *forgeFile = nil;
         
         NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
+        
         if ([type isEqualToString:(NSString*)kUTTypeImage]) {
-            forgeFile = [self saveImageForInfo:info error:&error];
+            UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+            if (image == nil) {
+                return [self->task error:@"Failed to obtain image for the selected item" type:@"UNEXPECTED_FAILURE" subtype:nil];
+            }
+            forgeFile = [file_Storage writeUIImageToTemporaryFile:image maxWidth:width maxHeight:height error:&error];
             
         } else if ([type isEqualToString:(NSString*)kUTTypeMovie]) {
             forgeFile = [self saveVideoForInfo:info error:&error];
@@ -156,27 +126,6 @@
 
 
 #pragma mark helpers
-
-- (ForgeFile*)saveImageForInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info error:(NSError**)error {
-    UIImage *source = [info objectForKey:UIImagePickerControllerOriginalImage];
-    if (source == nil) {
-        *error = [NSError errorWithDomain:ForgeErrorDomain
-                                     code:ForgeErrorCode
-                                 userInfo:@{
-             NSLocalizedDescriptionKey:@"Failed to obtain image for the selected item"
-         }];
-        return nil;
-    }
-    
-    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
-                                            resource:[ForgeStorage temporaryFileNameWithExtension:@"jpg"]];
-    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
-    [UIImageJPEGRepresentation(source, 0.9) writeToURL:destination atomically:YES];
-    [NSFileManager.defaultManager addSkipBackupAttributeToItemAtURL:destination];
-    
-    return forgeFile;
-}
-
 
 - (ForgeFile*)saveVideoForInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info error:(NSError**)error {
     NSURL *source = [info objectForKey:UIImagePickerControllerMediaURL];

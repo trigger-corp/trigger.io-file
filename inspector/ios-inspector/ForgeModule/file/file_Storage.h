@@ -12,6 +12,8 @@
 
 @interface file_Storage : NSObject
 
++ (ForgeFile*)writeUIImageToTemporaryFile:(UIImage*)image maxWidth:(int)maxWidth maxHeight:(int)maxHeight error:(NSError**)error;
+
 + (void)transcode:(PHAsset*)asset withTask:(ForgeTask*)task videoQuality:(NSString*)videoQuality;
 
 @end
