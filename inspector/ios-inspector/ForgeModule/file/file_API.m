@@ -37,12 +37,29 @@
 
 
 + (void)getVideo:(ForgeTask*)task {
+    // TODO we need Photo Library permissions if we want to transcode video
+    if (task.params[@"videoQuality"] && ![task.params[@"videoQuality"] isEqualToString:@"default"]) {
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            if (status != PHAuthorizationStatusAuthorized) {
+                [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+                return;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [file_API _getVideo:task];
+            });
+        }];
+    } else {
+        [file_API _getVideo:task];
+    }
+}
+
++ (void)_getVideo:(ForgeTask*)task {
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = 1;
         configuration.filter = [PHPickerFilter anyFilterMatchingSubfilters:@[
             PHPickerFilter.videosFilter,
-            // TODO PHPickerFilter.livePhotosFilter 
+            // TODO PHPickerFilter.livePhotosFilter
         ]];
         configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible;
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
@@ -52,6 +69,7 @@
         [delegate openPicker];
     }
 }
+
 
 
 #pragma mark operations on resource paths

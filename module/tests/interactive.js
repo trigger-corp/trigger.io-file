@@ -181,7 +181,6 @@ asyncTest("Gallery", 4, function() {
 asyncTest("Embedding video in webview", 1, function() {
     var runTest = function () {
         forge.file.getVideo({
-            videoQuality: "low"
         }, function (file) {
             forge.file.URL(file, function (url) {
                 askQuestion("Did your video just play: <video controls autoplay playsinline style='max-width:512px; max-height:512px' src='" + url + "'></video>", {
@@ -198,6 +197,30 @@ asyncTest("Embedding video in webview", 1, function() {
     };
     askQuestion("When prompted select a video from the gallery", { Ok: runTest });
 });
+
+
+if (forge.is.ios()) {
+    asyncTest("Embedding transcoded video in webview", 1, function() {
+        var runTest = function () {
+            forge.file.getVideo({
+                videoQuality: "low"
+            }, function (file) {
+                forge.file.URL(file, function (url) {
+                    askQuestion("Did a smaller version of your video just play: <video controls autoplay playsinline style='max-width:512px; max-height:512px' src='" + url + "'></video>", {
+                        Yes: function () {
+                            ok(true, "video playback successful");
+                            start();
+                        }, No: function () {
+                            ok(false, "video playback failed");
+                            start();
+                        }
+                    });
+                }, api_error("file.URL"));
+            }, api_error("file.getVideo"));
+        };
+        askQuestion("When prompted select the same video from the gallery", { Ok: runTest });
+    });
+}
 
 
 asyncTest("Cancel", 1, function() {

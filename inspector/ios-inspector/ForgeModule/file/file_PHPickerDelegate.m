@@ -38,7 +38,7 @@
     PHPickerViewController *controller = [[PHPickerViewController alloc] initWithConfiguration:self->configuration];
     controller.delegate = self;
     controller.presentationController.delegate = self;
-
+        
     [[[ForgeApp sharedApp] viewController] presentViewController:controller animated:YES completion:nil];
 }
 
@@ -63,6 +63,7 @@
         }
 
         NSMutableArray<ForgeFile*> *files = [NSMutableArray arrayWithCapacity:results.count];
+        __block bool exitEarly = false; // TODO transcoded videos have an akward path
         __block NSError *error = nil;
 
         [results enumerateObjectsUsingBlock:^(PHPickerResult *result, NSUInteger index, BOOL *stop) {
@@ -71,6 +72,19 @@
                 file = [self saveImageForResultSync:result maxWidth:width maxHeight:height error:&error];
                 
             } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
+                if (![videoQuality isEqualToString:@"default"]) {
+                    // TODO until Apple allow us to transcode PHPicker results directly
+                    NSString *assetIdentifier = result.assetIdentifier;
+                    PHFetchResult *fetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[assetIdentifier] options:nil];
+                    if (fetchResult.count == 0) {
+                        return;
+                    }
+                    PHAsset *asset = fetchResult.firstObject;
+                    [file_Storage transcode:asset withTask:self->task videoQuality:videoQuality];
+                    *stop = true;
+                    exitEarly = true;
+                    return;
+                }
                 file = [self saveVideoForResultSync:result videoQuality:videoQuality error:&error];
             }
 
@@ -84,7 +98,9 @@
             }
         }];
 
-        if (error != nil) {
+        if (exitEarly) {
+            // TODO result was handled by [file_Storage transcode]
+        } else if (error != nil) {
             [self->task error:[error localizedDescription] type:@"UNEXPECTED_FAILURE" subtype:nil];
         } else if (files.count == 0) {
             [self->task error:@"No valid items selected" type:@"UNEXPECTED_FAILURE" subtype:nil];

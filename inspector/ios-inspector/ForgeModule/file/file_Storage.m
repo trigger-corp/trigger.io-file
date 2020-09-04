@@ -37,7 +37,6 @@
 //   https://stackoverflow.com/questions/20190485
 
 + (void)transcode:(PHAsset*)asset withTask:(ForgeTask*)task videoQuality:(NSString*)videoQuality {
-
     PHVideoRequestOptions *options = [PHVideoRequestOptions new];
     options.version = PHVideoRequestOptionsVersionCurrent;
     options.deliveryMode = PHVideoRequestOptionsDeliveryModeFastFormat;
@@ -46,10 +45,16 @@
     [[PHImageManager defaultManager] requestAVAssetForVideo:asset
                                                    options:options
                                              resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
-        NSURL *destination = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+        /*NSURL *destination = [NSURL fileURLWithPath:NSTemporaryDirectory()];
         NSString *timestamp = [NSString stringWithFormat: @"transcoded-%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0];
         destination = [destination URLByAppendingPathComponent:timestamp];
-        destination = [destination URLByAppendingPathExtension:@"mp4"];
+        destination = [destination URLByAppendingPathExtension:@"mp4"];*/
+        
+        NSString *extension = @"mp4";  // TODO
+        ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
+                                                resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
+        NSURL *destination = [ForgeStorage nativeURL:forgeFile];
+
 
         NSString *exportPreset = nil;
         if ([videoQuality isEqualToString:@"low"]) {
@@ -63,7 +68,7 @@
         NSArray *compatiblePresets = [AVAssetExportSession exportPresetsCompatibleWithAsset:asset];
         if (![compatiblePresets containsObject:exportPreset]) {
             NSLog(@"file_Util::transcode warning: No compatible preset found for '%@' quality", videoQuality);
-            exportPreset = AVAssetExportPresetPassthrough;
+            exportPreset = AVAssetExportPresetHighestQuality;
         }
 
         AVAssetExportSession *session = nil;
@@ -101,7 +106,7 @@
                     NSLog(@"Original video size is %llu bytes", [size unsignedLongLongValue]);
                     NSLog(@"Compressed video size is %llu bytes", [[[NSFileManager defaultManager] attributesOfItemAtPath:[destination path] error:nil] fileSize]);
 
-                    [task success:[destination path]];
+                    [task success:[forgeFile toScriptObject]];
                     break;
                 }
             }

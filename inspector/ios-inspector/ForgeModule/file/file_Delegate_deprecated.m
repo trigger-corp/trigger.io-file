@@ -45,10 +45,8 @@
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     picker.mediaTypes = [NSArray arrayWithObjects:self->type, nil];
     picker.delegate = self;
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
-    });
+    
+    [[[ForgeApp sharedApp] viewController] presentViewController:picker animated:NO completion:nil];
 }
 
 
@@ -80,6 +78,12 @@
             forgeFile = [file_Storage writeUIImageToTemporaryFile:image maxWidth:width maxHeight:height error:&error];
             
         } else if ([type isEqualToString:(NSString*)kUTTypeMovie]) {
+            // TODO until Apple allow us to transcode PHPicker results directly
+            if (![videoQuality isEqualToString:@"default"]) {
+                PHAsset *asset = [info objectForKey:UIImagePickerControllerPHAsset];
+                [file_Storage transcode:asset withTask:self->task videoQuality:videoQuality];
+                return;
+            }
             forgeFile = [self saveVideoForInfo:info videoQuality:videoQuality error:&error];
             
         } else {
