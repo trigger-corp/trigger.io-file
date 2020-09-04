@@ -50,7 +50,6 @@ The optional parameters can contain any combination of the following:
 
 -  ``width``  (number): The maximum height of the image returned.
 -  ``height`` (number): The maximum width of the image returned.
--  ``fixRotation`` (boolean): Checks the image's EXIF metadata and correctly rotate the image if needed.
 
 Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 

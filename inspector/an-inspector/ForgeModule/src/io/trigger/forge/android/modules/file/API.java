@@ -37,7 +37,6 @@ public class API {
         // parse options
         final int maxWidth = task.params.has("width") ? task.params.get("width").getAsInt() : 0;
         final int maxHeight = task.params.has("height") ? task.params.get("height").getAsInt() : 0;
-        final boolean fixRotation = task.params.has("fixRotation") ? task.params.get("fixRotation").getAsBoolean() : false;
         final String videoQuality = task.params.has("videoQuality") ? task.params.get("videoQuality").getAsString() : "default";
 
         ForgeIntentResultHandler resultHandler = new ForgeIntentResultHandler() {
@@ -56,8 +55,8 @@ public class API {
                     Uri source = data.getData();
                     try {
                         ForgeFile forgeFile = null;
-                        if (type.startsWith("image/") && (maxWidth > 0 || maxHeight > 0 || fixRotation == true)) {
-                            forgeFile = Storage.writeImageUriToTemporaryFile(source, fixRotation, maxWidth, maxHeight);
+                        if (type.startsWith("image/") && (maxWidth > 0 || maxHeight > 0)) {
+                            forgeFile = Storage.writeImageUriToTemporaryFile(source, maxWidth, maxHeight);
 
                         } else if (type.startsWith("video/") && !videoQuality.equalsIgnoreCase("default")) {
                             forgeFile = Storage.writeVideoUriToTemporaryFile(source, videoQuality);

@@ -78,7 +78,7 @@ public class Storage {
     }
 
 
-    public static ForgeFile writeImageUriToTemporaryFile(Uri source, boolean fixRotation, int maxWidth, int maxHeight) throws IOException {
+    public static ForgeFile writeImageUriToTemporaryFile(Uri source, int maxWidth, int maxHeight) throws IOException {
         ContentResolver contentResolver = ForgeApp.getActivity().getContentResolver();
 
         String filename = ForgeStorage.temporaryFileNameWithExtension("jpg");
@@ -97,7 +97,7 @@ public class Storage {
             throw new IOException(e.getLocalizedMessage());
         }
 
-        // fix source rotation - TODO optional?
+        // fix source rotation if needed
         int rotation = 0;
         ExifIFD0Directory exifIFD0Directory = metadata.getDirectory(ExifIFD0Directory.class);
         if (exifIFD0Directory == null) {

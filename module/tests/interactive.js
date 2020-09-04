@@ -136,8 +136,7 @@ asyncTest("Gallery", 4, function() {
     var runTests = function () {
         forge.file.getImage({
             width: 256,
-            height: 256,
-            fixRotation: true
+            height: 256
         }, function (file) {
             askQuestion("Were you just prompted to select an image?", { Yes: function () {
                 ok(true, "Success");
