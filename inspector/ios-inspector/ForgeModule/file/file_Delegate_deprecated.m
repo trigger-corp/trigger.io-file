@@ -109,8 +109,8 @@
 #pragma mark helpers
 
 - (ForgeFile*)saveVideoForInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info videoQuality:(NSString*)videoQuality error:(NSError**)error {
-    NSURL *source = [info objectForKey:UIImagePickerControllerMediaURL];
-    if (source == nil) {
+    NSURL *url = [info objectForKey:UIImagePickerControllerMediaURL];
+    if (url == nil) {
         *error = [NSError errorWithDomain:ForgeErrorDomain
                                      code:ForgeErrorCode
                                  userInfo:@{
@@ -119,36 +119,7 @@
         return nil;
     }
     
-    NSString *extension = source.pathExtension;
-    if (extension == nil) {
-        extension = @"mp4";
-    }
-    
-    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
-                                            resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
-    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
-    
-    NSData *data = [NSData dataWithContentsOfURL:source];
-    if (data == nil) {
-        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
-                                    code:NSItemProviderUnavailableCoercionError
-                                userInfo:@{
-            NSLocalizedDescriptionKey:@"Failed to load video data for the selected item"
-        }];
-        return nil;
-    }
-    
-    if (![data writeToURL:destination atomically:YES]) {
-        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
-                                    code:NSItemProviderUnavailableCoercionError
-                                userInfo:@{
-            NSLocalizedDescriptionKey:@"Failed to write video data for the selected item"
-        }];
-        return nil;
-    }
-    [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:destination];
-    
-    return forgeFile;
+    return [file_Storage writeNSURLToTemporaryFile:url error:error];
 }
 
 @end

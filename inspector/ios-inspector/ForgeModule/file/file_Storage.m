@@ -25,11 +25,37 @@
     return forgeFile;
 }
 
++ (ForgeFile*)writeNSURLToTemporaryFile:(NSURL*)url error:(NSError**)error {
+    NSString *extension = url.pathExtension;
+    if (extension == nil) {
+        extension = @"mp4";
+    }
+    ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
+                                            resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
+    NSURL *destination = [ForgeStorage nativeURL:forgeFile];
 
-+ (ForgeFile*)writeVideoToTemporaryFile:(PHAsset*)asset withTask:(ForgeTask*)task videoQuality:(NSString*)videoQuality {
-    return nil;
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    if (data == nil) {
+        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
+                                    code:NSItemProviderUnavailableCoercionError
+                                userInfo:@{
+            NSLocalizedDescriptionKey:@"Failed to load data for the selected item"
+        }];
+        return nil;
+        
+    } else if (![data writeToURL:destination atomically:YES]) {
+        *error = [NSError errorWithDomain:NSItemProviderErrorDomain
+                                    code:NSItemProviderUnavailableCoercionError
+                                userInfo:@{
+            NSLocalizedDescriptionKey:@"Failed to write data for the selected item"
+        }];
+        return nil;
+    }
+    
+    [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:destination];
+    
+    return forgeFile;
 }
-
 
 
 // Because:
@@ -45,16 +71,10 @@
     [[PHImageManager defaultManager] requestAVAssetForVideo:asset
                                                    options:options
                                              resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
-        /*NSURL *destination = [NSURL fileURLWithPath:NSTemporaryDirectory()];
-        NSString *timestamp = [NSString stringWithFormat: @"transcoded-%.0f", [NSDate timeIntervalSinceReferenceDate] * 1000.0];
-        destination = [destination URLByAppendingPathComponent:timestamp];
-        destination = [destination URLByAppendingPathExtension:@"mp4"];*/
-        
-        NSString *extension = @"mp4";  // TODO
+        NSString *extension = @"mp4";
         ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                                 resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
         NSURL *destination = [ForgeStorage nativeURL:forgeFile];
-
 
         NSString *exportPreset = nil;
         if ([videoQuality isEqualToString:@"low"]) {

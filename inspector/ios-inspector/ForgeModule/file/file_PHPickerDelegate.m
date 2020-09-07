@@ -164,32 +164,7 @@
                 error_ret = error;
 
             } else {
-                NSString *extension = url.pathExtension;
-                if (extension == nil) {
-                    extension = @"mp4";
-                }
-                ret = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
-                                       resource:[ForgeStorage temporaryFileNameWithExtension:extension]];
-                NSURL *destination = [ForgeStorage nativeURL:ret];
-
-                NSData *data = [NSData dataWithContentsOfURL:url];
-                if (data == nil) {
-                    error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
-                                                code:NSItemProviderUnavailableCoercionError
-                                            userInfo:@{
-                        NSLocalizedDescriptionKey:@"Failed to load video data for the selected item"
-                    }];
-                    
-                } else if (![data writeToURL:destination atomically:YES]) {
-                    error_ret = [NSError errorWithDomain:NSItemProviderErrorDomain
-                                                code:NSItemProviderUnavailableCoercionError
-                                            userInfo:@{
-                        NSLocalizedDescriptionKey:@"Failed to write video data for the selected item"
-                    }];
-
-                } else {
-                    [[NSFileManager defaultManager] addSkipBackupAttributeToItemAtURL:url];
-                }
+                ret = [file_Storage writeNSURLToTemporaryFile:url error:&error_ret];
             }
             dispatch_semaphore_signal(semaphore);
         }];
