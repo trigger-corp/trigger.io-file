@@ -8,7 +8,7 @@ forge["file"] = {
      * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
-    "getImage": function (options, success, error) {
+    "getImages": function (options, success, error) {
         if (typeof options === "function") {
             error = success;
             success = options;
@@ -17,8 +17,8 @@ forge["file"] = {
         if (!options) {
             options = {};
         }
-        options.source = "gallery";
-        forge.internal.call("file.getImage", options, success && function (file) {
+        options.selectionLimit = 0;
+        forge.internal.call("file.getImages", options, success && function (file) {
             success(file);
         }, error);
     },
@@ -30,6 +30,37 @@ forge["file"] = {
      * @param {function(file: File)=} success
      * @param {function({message: string}=} error
      */
+    "getVideos": function (options, success, error) {
+        if (typeof options === "function") {
+            error = success;
+            success = options;
+            options = {};
+        }
+        if (!options) {
+            options = {};
+        }
+        options.selectionLimit = 0;
+        forge.internal.call("file.getVideos", options, success && function (file) {
+            success(file);
+        }, error);
+    },
+
+
+    "getImage": function (options, success, error) {
+        if (typeof options === "function") {
+            error = success;
+            success = options;
+            options = {};
+        }
+        if (!options) {
+            options = {};
+        }
+        options.selectionLimit = 1;
+        forge.internal.call("file.getImages", options, success && function (file) {
+            success(file);
+        }, error);
+    },
+
     "getVideo": function (options, success, error) {
         if (typeof options === "function") {
             error = success;
@@ -39,8 +70,8 @@ forge["file"] = {
         if (!options) {
             options = {};
         }
-        options.source = "gallery";
-        forge.internal.call("file.getVideo", options, success && function (file) {
+        options.selectionLimit = 1;
+        forge.internal.call("file.getVideos", options, success && function (file) {
             success(file);
         }, error);
     },
@@ -73,13 +104,11 @@ forge["file"] = {
      * @param {function(url: string)=} success
      * @param {function({message: string}=} error
      */
-    // TODO either deprecate this or rename it to something like getEmbeddableImageURL
     "URL": function (file, options, success, error) { // deprecated
         if (typeof options === "function") {
             error = success;
             success = options;
         }
-        // TODO deprecated update docs Avoid mutating original file
         var newFile = {};
         for (var prop in file) {
             newFile[prop] = file[prop];
@@ -232,4 +261,11 @@ forge["file"] = {
     "getStorageSizeInformation": function (success, error) {
         forge.internal.call("file.getStorageSizeInformation", {}, success, error);
     }
+};
+
+
+// support for deprecated module API's: gallery
+forge["gallery"] = {
+    getImages: forge.file.getImages,
+    getVideos: forge.file.getVideos,
 };
