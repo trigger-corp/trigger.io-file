@@ -3,85 +3,6 @@
 module("forge.file");
 
 
-// helper for logging consistent and informative api errors
-var api_error = function (api) {
-    return function (e) {
-        ok(false, api + " failure: " + e.message);
-        start();
-    };
-};
-
-
-// TODO looks like we're losing this, maybe move some of it to the capture module
-// permissions module native code has to be baked into the file module to avoid app store rejections
-/*if (false && forge.is.ios()) {
-    if (!forge.permissions) {
-        forge.permissions = {
-            check: function (permission, success, error) {
-                forge.internal.call("file.permissions_check", {
-                    permission: "ios.permission.photos"
-                }, success, error);
-
-            },
-            request: function (permission, rationale, success, error) {
-                forge.internal.call("file.permissions_request", {
-                    permission: "ios.permission.photos",
-                    rationale: rationale
-                }, success, error);
-            },
-            photos: {
-                "read": "photos_read"
-            }
-        };
-    }
-
-    var rationale = "Can haz fileburger?";
-
-    asyncTest("File permission request denied.", 1, function() {
-        var runTest = function() {
-            forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
-                if (!allowed) {
-                    ok(true, "Permission request denied.");
-                    start();
-                } else {
-                    ok(false, "Permission request was allowed. Expected permission denied.");
-                    start();
-                }
-            }, function () {
-                ok(false, "API method returned failure");
-                start();
-            });
-        };
-        forge.permissions.check(forge.permissions.photos.read, function (allowed) {
-            if (allowed) {
-                ok(true, "Already have permission");
-                start();
-            } else {
-                askQuestion("When prompted, deny the permission request", { Ok: runTest });
-            }
-        });
-    });
-
-    asyncTest("File permission request allowed.", 1, function() {
-        var runTest = function() {
-            forge.permissions.request(forge.permissions.photos.read, rationale, function (allowed) {
-                if (allowed) {
-                    ok(true, "Permission request allowed.");
-                    start();
-                } else {
-                    ok(false, "Permission request was denied. Expected permission allowed.");
-                    start();
-                }
-            }, function () {
-                ok(false, "API method returned failure");
-                start();
-            });
-        };
-        askQuestion("If prompted, allow the permission request", { Ok: runTest });
-    });
-}*/
-
-
 // - media pickers ------------------------------------------------------------
 
 asyncTest("Select image from gallery and check file info", 2, function() {
@@ -100,8 +21,8 @@ asyncTest("Select image from gallery and check file info", 2, function() {
                                     start();
                                 }
                             });
-            }, api_error("file.info"));
-        }, api_error("file.getImage"));
+            }, apiError("file.info"));
+        }, apiError("file.getImage"));
     };
     askQuestion("When prompted select an image from the gallery", { Ok: runTest });
 });
@@ -125,8 +46,8 @@ asyncTest("Select resized image from gallery and check file info", 2, function()
                                     start();
                                 }
                             });
-            }, api_error("file.info"));
-        }, api_error("file.getImage"));
+            }, apiError("file.info"));
+        }, apiError("file.getImage"));
     };
     askQuestion("When prompted select the same image from the gallery", { Ok: runTest });
 });
@@ -161,18 +82,18 @@ asyncTest("Gallery", 4, function() {
                                     ok(false, "User claims failure with forge.file.base64");
                                     start();
                                 }});
-                            }, api_error("file.base64"));
+                            }, apiError("file.base64"));
                         }, No: function () {
                             ok(false, "User claims failure with forge.file.URL");
                             start();
                         }});
-                    }, api_error("file.URL"));
-                }, api_error("file.isFile"));
+                    }, apiError("file.URL"));
+                }, apiError("file.isFile"));
             }, No: function () {
                 ok(false, "User claims failure");
                 start();
             }});
-        }, api_error("file.getImage"));
+        }, apiError("file.getImage"));
     };
     askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTests });
 });
@@ -198,7 +119,7 @@ asyncTest("Select multiple images from gallery", 2, function() {
                 }
             });
 
-        }, api_error("file.getImages"));
+        }, apiError("file.getImages"));
     };
     askQuestion("When prompted select three images from the gallery", { Ok: runTest });
 });
@@ -218,8 +139,8 @@ asyncTest("Embedding video in webview", 1, function() {
                         start();
                     }
                 });
-            }, api_error("file.URL"));
-        }, api_error("file.getVideo"));
+            }, apiError("file.URL"));
+        }, apiError("file.getVideo"));
     };
     askQuestion("When prompted select a video from the gallery", { Ok: runTest });
 });
@@ -241,8 +162,8 @@ if (forge.is.ios()) {
                             start();
                         }
                     });
-                }, api_error("file.URL"));
-            }, api_error("file.getVideo"));
+                }, apiError("file.URL"));
+            }, apiError("file.getVideo"));
         };
         askQuestion("When prompted select the same video from the gallery", { Ok: runTest });
     });
@@ -266,7 +187,7 @@ asyncTest("Select multiple videos from gallery", 2, function() {
                 }
             });
 
-        }, api_error("file.getVideos"));
+        }, apiError("file.getVideos"));
     };
     askQuestion("When prompted select three videos from the gallery", { Ok: runTest });
 });
@@ -303,13 +224,13 @@ asyncTest("File cache - With delete", 6, function () {
                             ok(!exists, "File deleted");
                             start();
                         });
-                    }, api_error("file.remove"));
+                    }, apiError("file.remove"));
                 }, No: function () {
                     ok(false, "User claims failure");
                     start();
                 }});
-            }, api_error("file.URL"));
-        }, api_error("file.cacheURL"));
+            }, apiError("file.URL"));
+        }, apiError("file.cacheURL"));
     }, No: function () {
         ok(false, "Image not loaded");
         start();
@@ -330,8 +251,8 @@ asyncTest("File saving", 4, function () {
                     ok(false, "User claims failure");
                     start();
                 }});
-            }, api_error("file.URL"));
-        }, api_error("file.saveURL"));
+            }, apiError("file.URL"));
+        }, apiError("file.saveURL"));
     }, No: function () {
         ok(false, "Image not loaded");
         start();
@@ -377,7 +298,7 @@ asyncTest("Device storage", 1, function () {
                 start();
             }
         });
-    }, api_error("file.getStorageSizeInformation"));
+    }, apiError("file.getStorageSizeInformation"));
 });
 
 
@@ -399,8 +320,8 @@ asyncTest("Clear Cache", 3, function () {
                         start();
                     }
                 });
-            }, api_error("file.getStorageSizeInformation"));
-        }, api_error("file.clearCache"));
+            }, apiError("file.getStorageSizeInformation"));
+        }, apiError("file.clearCache"));
     };
     askQuestion("Click ok to clear the device cache and show device storage size information again", { Ok: runTest });
 });
