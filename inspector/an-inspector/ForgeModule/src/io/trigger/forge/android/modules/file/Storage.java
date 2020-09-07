@@ -31,6 +31,9 @@ import io.trigger.forge.android.core.ForgeStorage;
 import io.trigger.forge.android.util.BitmapUtil;
 
 public class Storage {
+    public interface IOFunction<T, U> {
+        U apply(T t) throws IOException;
+    }
 
     public static ForgeFile writeURLToEndpoint(final String url, ForgeStorage.EndpointId endpointId) throws IOException {
         Uri source = Uri.parse(url);
@@ -144,5 +147,4 @@ public class Storage {
         // TODO transcode video once min API level hits 18 and we can rely on MediaCodec being present
         return Storage.writeMediaUriToTemporaryFile(source);
     }
-
 }

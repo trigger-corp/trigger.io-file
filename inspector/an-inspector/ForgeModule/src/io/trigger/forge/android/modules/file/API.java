@@ -5,36 +5,42 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Base64;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import io.trigger.forge.android.core.ForgeActivity.EventAccessBlock;
 import io.trigger.forge.android.core.ForgeApp;
 import io.trigger.forge.android.core.ForgeFile;
 import io.trigger.forge.android.core.ForgeIntentResultHandler;
+import io.trigger.forge.android.core.ForgeLog;
 import io.trigger.forge.android.core.ForgeParam;
 import io.trigger.forge.android.core.ForgeStorage;
 import io.trigger.forge.android.core.ForgeTask;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
+import static io.trigger.forge.android.modules.file.Storage.writeImageUriToTemporaryFile;
+import static io.trigger.forge.android.modules.file.Storage.writeVideoUriToTemporaryFile;
 
 public class API {
 
     //region media picker
 
-    public static void getImage(final ForgeTask task) { // deprecated in favour of pickMedia
+    public static void getImages(final ForgeTask task) { // deprecated in favour of pickMedia
         API.pickMedia(task, "image/*");
     }
 
-    public static void getVideo(final ForgeTask task) { // deprecated in favour of pickMedia
+    public static void getVideos(final ForgeTask task) { // deprecated in favour of pickMedia
         API.pickMedia(task, "video/*");
     }
 
     public static void pickMedia(final ForgeTask task, final String type) {
         // parse options
+        final int selectionLimit = task.params.has("selectionLimit") ? task.params.get("selectionLimit").getAsInt() : 1;
         final int maxWidth = task.params.has("width") ? task.params.get("width").getAsInt() : 0;
         final int maxHeight = task.params.has("height") ? task.params.get("height").getAsInt() : 0;
         final String videoQuality = task.params.has("videoQuality") ? task.params.get("videoQuality").getAsString() : "default";
@@ -43,38 +49,55 @@ public class API {
             @Override
             public void result(int requestCode, int resultCode, Intent data) {
                 if (resultCode == RESULT_OK) {
-
-                    /* TODO if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-                        int itemCount = data.getClipData().getItemCount();
-                        for (int index = 0; index < itemCount; index++) {
-                            Uri uri = data.getClipData().getItemAt(index).getUri();
-                            ForgeLog.d(uri.toString());
-                        }
-                    }*/
-
-                    Uri source = data.getData();
-                    try {
+                    Storage.IOFunction<Uri, ForgeFile> write = (Uri source) -> {
                         ForgeFile forgeFile = null;
                         if (type.startsWith("image/") && (maxWidth > 0 || maxHeight > 0)) {
-                            forgeFile = Storage.writeImageUriToTemporaryFile(source, maxWidth, maxHeight);
-
+                            forgeFile = writeImageUriToTemporaryFile(source, maxWidth, maxHeight);
                         } else if (type.startsWith("video/") && !videoQuality.equalsIgnoreCase("default")) {
-                            forgeFile = Storage.writeVideoUriToTemporaryFile(source, videoQuality);
-
+                            forgeFile = writeVideoUriToTemporaryFile(source, videoQuality);
                         } else {
                             forgeFile = Storage.writeMediaUriToTemporaryFile(source);
                         }
+                        return forgeFile;
+                    };
 
-                        task.success(forgeFile.toScriptObject());
+                    try {
+                        ArrayList<ForgeFile> forgeFiles = new ArrayList<>();
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                            int itemCount = data.getClipData().getItemCount();
+                            for (int index = 0; index < itemCount; index++) {
+                                Uri uri = data.getClipData().getItemAt(index).getUri();
+                                ForgeLog.d(uri.toString());
+                                ForgeFile forgeFile = write.apply(uri);
+                                forgeFiles.add(forgeFile);
+                            }
+                        } else {
+                            Uri uri = data.getData();
+                            ForgeFile forgeFile = write.apply(uri);
+                            forgeFiles.add(forgeFile);
+                        }
+
+                        if (forgeFiles.size() == 0) {
+                            task.error("No valid items selected", "EXPECTED_FAILURE", null);
+                        } else if (selectionLimit == 1) {
+                            task.success(forgeFiles.get(0).toScriptObject());
+                        } else {
+                            JsonArray ret = new JsonArray();
+                            for (ForgeFile file: forgeFiles) {
+                                ret.add(file.toScriptObject());
+                            }
+                            task.success(ret);
+                        }
 
                     } catch (IOException e) {
                         e.printStackTrace();
-                        task.error("Error saving image to app storage: " + e.getLocalizedMessage(), "EXPECTED_FAILURE", null);
+                        task.error("Error saving selection to app storage: " + e.getLocalizedMessage(), "EXPECTED_FAILURE", null);
                     }
+
                 } else if (resultCode == RESULT_CANCELED) {
-                    task.error("User cancelled image capture", "EXPECTED_FAILURE", null);
+                    task.error("User cancelled selection", "EXPECTED_FAILURE", null);
                 } else {
-                    task.error("Unknown error capturing image", "UNEXPECTED_FAILURE", null);
+                    task.error("Unknown error during selection", "UNEXPECTED_FAILURE", null);
                 }
             }
         };
@@ -88,7 +111,9 @@ public class API {
                     public void run() {
                         Intent intent = new Intent(Intent.ACTION_PICK);
                         intent.setType(type);
-                        // TODO intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        if (selectionLimit != 1) {
+                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                        }
                         ForgeApp.intentWithHandler(intent, resultHandler);
                     }
                 });
