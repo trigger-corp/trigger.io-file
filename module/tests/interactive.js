@@ -114,7 +114,7 @@ asyncTest("Select resized image from gallery and check file info", 2, function()
         }, function (file) {
             forge.file.info(file, function (info) {
                 ok(true, "file.info claims success");
-                askQuestion("Does the following file information describe the file: " +
+                askQuestion("Is the file size of your image smaller this time?" +
                             JSON.stringify(info), {
                                 Yes: function () {
                                     ok(true, "File information is correct");
@@ -128,7 +128,7 @@ asyncTest("Select resized image from gallery and check file info", 2, function()
             }, api_error("file.info"));
         }, api_error("file.getImage"));
     };
-    askQuestion("When prompted select an image from the gallery", { Ok: runTest });
+    askQuestion("When prompted select the same image from the gallery", { Ok: runTest });
 });
 
 
@@ -149,12 +149,12 @@ asyncTest("Gallery", 4, function() {
                     forge.file.URL(file, function (url) {
                         askQuestion("Is this your image:<br><img src='" +
                                     url +
-                                    "' style='max-width: 512px; max-height: 512px'>", { Yes: function () {
+                                    "' style='max-width: 512px; max-height: 512px' />", { Yes: function () {
                             ok(true, "Success with forge.file.URL");
                             forge.file.base64(file, function (data) {
                                 askQuestion("Is this also your image:<br><img src='data:image/jpg;base64," +
                                             data +
-                                            "' style='max-width:512px; max-height:512px'>", { Yes: function () {
+                                            "' style='max-width:512px; max-height:512px' />", { Yes: function () {
                                     ok(true, "Success with forge.file.base64");
                                     start();
                                 }, No: function () {
@@ -175,6 +175,32 @@ asyncTest("Gallery", 4, function() {
         }, api_error("file.getImage"));
     };
     askQuestion("In this test use the gallery to select a picture when prompted", { Ok: runTests });
+});
+
+
+asyncTest("Select multiple images from gallery", 2, function() {
+    var runTest = function () {
+        forge.file.getImages({
+            width: 256,
+            height: 256
+        }, function (files) {
+            ok(files.length === 3, "correct number of images");
+            var images = files.reduce(function (ret, file, index, files) {
+                return ret + "<img src='" + file.endpoint + "/" + file.resource + "' style='max-width: 512px; max-height: 512px' />";
+            }, "");
+            askQuestion("Are these your images: " + images, {
+                Yes: function () {
+                    ok(true, "multiple image selection successful");
+                    start();
+                }, No: function () {
+                    ok(false, "multiple image selection failed failed");
+                    start();
+                }
+            });
+
+        }, api_error("file.getImages"));
+    };
+    askQuestion("When prompted select three images from the gallery", { Ok: runTest });
 });
 
 
@@ -223,6 +249,29 @@ if (forge.is.ios()) {
 }
 
 
+asyncTest("Select multiple videos from gallery", 2, function() {
+    var runTest = function () {
+        forge.file.getVideos(function (files) {
+            ok(files.length === 3, "correct number of videos");
+            var videos = files.reduce(function (ret, file, index, files) {
+                return ret + "<video controls autoplay playsinline style='max-width:256px; max-height:256px' src='" + file.endpoint + "/" + file.resource + "'></video>";
+            }, "");
+            askQuestion("Are these your videos: " + videos, {
+                Yes: function () {
+                    ok(true, "multiple video selection successful");
+                    start();
+                }, No: function () {
+                    ok(false, "multiple video selection failed failed");
+                    start();
+                }
+            });
+
+        }, api_error("file.getVideos"));
+    };
+    askQuestion("When prompted select three videos from the gallery", { Ok: runTest });
+});
+
+
 asyncTest("Cancel", 1, function() {
     var runTest = function () {
         forge.file.getImage(function () {
@@ -240,13 +289,13 @@ asyncTest("Cancel", 1, function() {
 // - operations on urls -------------------------------------------------------
 
 asyncTest("File cache - With delete", 6, function () {
-    askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg'>", { Yes: function () {
+    askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg' />", { Yes: function () {
         ok(true, "Image loaded from trigger.io");
         forge.file.cacheURL("https://trigger.io/forge-static/img/trigger-light/trigger-io-command-line.jpg", function (file) {
             ok(true, "file.cacheURL claims success");
             forge.file.URL(file, function (url) {
                 ok(true, "file.URL claims success");
-                askQuestion("Is this the same image:<br><img src='"+url+"'>", { Yes: function () {
+                askQuestion("Is this the same image:<br><img src='" + url + "' />", { Yes: function () {
                     ok(true, "Image cached correctly");
                     forge.file.remove(file, function () {
                         ok(true, "file.remove claims success");
@@ -268,13 +317,13 @@ asyncTest("File cache - With delete", 6, function () {
 });
 
 asyncTest("File saving", 4, function () {
-    askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-t.png'>", { Yes: function () {
+    askQuestion("Can you see the following image (loaded from trigger.io):<br><img src='https://trigger.io/forge-static/img/trigger-t.png' />", { Yes: function () {
         ok(true, "Trigger T loaded from trigger.io");
         forge.file.saveURL("https://trigger.io/forge-static/img/trigger-t.png", function (file) {
             ok(true, "file.saveURL claims success");
             forge.file.URL(file, function (url) {
                 ok(true, "file.URL claims success");
-                askQuestion("Is this the same image:<br><img src='"+url+"'>", { Yes: function () {
+                askQuestion("Is this the same image:<br><img src='" + url + "' />", { Yes: function () {
                     ok(true, "Image cached correctly");
                     start();
                 }, No: function () {
