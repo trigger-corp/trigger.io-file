@@ -220,7 +220,7 @@ asyncTest("File cache - With delete", 6, function () {
                     ok(true, "Image cached correctly");
                     forge.file.remove(file, function () {
                         ok(true, "file.remove claims success");
-                        forge.file.isFile(file, function (exists) {
+                        forge.file.exists(file, function (exists) {
                             ok(!exists, "File deleted");
                             start();
                         });
