@@ -10,8 +10,6 @@
 #import <Photos/Photos.h>
 #import <PhotosUI/PHPicker.h>
 
-#import "JLPhotosPermission.h"
-
 #import "file_API.h"
 #import "file_PHPickerDelegate.h"
 #import "file_Delegate_deprecated.h"
