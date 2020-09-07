@@ -53,6 +53,7 @@ The optional parameters can contain any combination of the following:
 
 Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
+
 !method: forge.file.getVideo([params], success, error)
 !param: params `object` an optional object of parameters
 !param: success `function(file)` callback to be invoked when no errors occur (argument is the returned file)
@@ -67,6 +68,23 @@ The optional parameters can contain any combination of the following:
 Returned files are stored in a temporary location and may be deleted by the device operating system. Use `forge.file.saveURL` if you need to save the file to a permanent location.
 
 Please note that it is hard to predict the quantifiable properties of videos that have been transcoded with the `videoQuality` setting as it can vary greatly between operating system and device versions. Generally the `"high"` setting corresponds to the highest-quality video recording supported for device content sources.
+
+
+!method: forge.file.getImages([params], success, error)
+!param: params `object` an optional object of parameters
+!param: success `function([file1, file2, ...])` callback to be invoked when no errors occur (argument is an array of File objects)
+!description: Returns an array of file objects for images selected by the user from their photo gallery.
+!platforms: iOS, Android
+!param: error `function(content)` called with details of any error which may occur
+
+
+!method: forge.file.getVideos([params], success, error)
+!param: params `object` an optional object of parameters
+!param: success `function([file1, file2, ...])` callback to be invoked when no errors occur (argument is an array of File objects)
+!description: Returns an array of file objects for videos selected by the user from their media gallery.
+!platforms: iOS, Android
+!param: error `function(content)` called with details of any error which may occur
+
 
 
 ### Operations on Paths
