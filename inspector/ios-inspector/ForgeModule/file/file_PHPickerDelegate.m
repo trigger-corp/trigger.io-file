@@ -104,8 +104,14 @@
             [self->task error:[error localizedDescription] type:@"UNEXPECTED_FAILURE" subtype:nil];
         } else if (files.count == 0) {
             [self->task error:@"No valid items selected" type:@"UNEXPECTED_FAILURE" subtype:nil];
-        } else {
+        } else if (picker.configuration.selectionLimit == 1) {
             [self->task success:[files.firstObject toScriptObject]];
+        } else {
+            NSMutableArray *scriptObjects = [NSMutableArray new];
+            [files enumerateObjectsUsingBlock:^(ForgeFile *file, NSUInteger idx, BOOL *stop) {
+                [scriptObjects addObject:[file toScriptObject]];
+            }];
+            [self->task success:scriptObjects];
         }
 
         self->me = nil;

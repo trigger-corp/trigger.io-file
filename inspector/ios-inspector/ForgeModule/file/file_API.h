@@ -9,8 +9,8 @@
 
 @interface file_API : NSObject
 
-+ (void)getImage:(ForgeTask*)task;
-+ (void)getVideo:(ForgeTask*)task;
++ (void)getImages:(ForgeTask*)task;
++ (void)getVideos:(ForgeTask*)task;
 
 + (void)getFileFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource;
 + (void)getURLFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource;

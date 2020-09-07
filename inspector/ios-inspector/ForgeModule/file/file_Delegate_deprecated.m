@@ -60,6 +60,7 @@
 
 
 - (void) imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info {
+    int selectionLimit = task.params[@"selectionLimit"] ? [task.params[@"selectionLimit"] intValue] : 1;
     int width = task.params[@"width"] ? [task.params[@"width"] intValue] : 0;
     int height = task.params[@"height"] ? [task.params[@"height"] intValue] : 0;
     NSString *videoQuality = task.params[@"videoQuality"] ? (NSString*)task.params[@"videoQuality"] : @"default";
@@ -94,7 +95,13 @@
             return [self->task error:[NSString stringWithFormat:@"Error saving media: %@", error.localizedDescription] type:@"UNEXPECTED_FAILURE" subtype:nil];
         }
 
-        [self->task success:[forgeFile toScriptObject]];
+        if (selectionLimit == 1) {
+            [self->task success:[forgeFile toScriptObject]];
+        } else {
+            [self->task success:@[
+                [forgeFile toScriptObject]
+            ]];
+        }
     }];
 }
 

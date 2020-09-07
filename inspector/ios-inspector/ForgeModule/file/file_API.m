@@ -21,10 +21,12 @@
 
 #pragma mark media picker
 
-+ (void)getImage:(ForgeTask*)task {
++ (void)getImages:(ForgeTask*)task {
+    int selectionLimit = task.params[@"selectionLimit"] ? [task.params[@"selectionLimit"] intValue] : 1;
+    
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
-        configuration.selectionLimit = 1;
+        configuration.selectionLimit = selectionLimit;
         configuration.filter = PHPickerFilter.imagesFilter;
         configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible;
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
@@ -36,7 +38,7 @@
 }
 
 
-+ (void)getVideo:(ForgeTask*)task {
++ (void)getVideos:(ForgeTask*)task {
     // TODO we need Photo Library permissions if we want to transcode video
     if (task.params[@"videoQuality"] && ![task.params[@"videoQuality"] isEqualToString:@"default"]) {
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
@@ -45,18 +47,20 @@
                 return;
             }
             dispatch_async(dispatch_get_main_queue(), ^{
-                [file_API _getVideo:task];
+                [file_API _getVideos:task];
             });
         }];
     } else {
-        [file_API _getVideo:task];
+        [file_API _getVideos:task];
     }
 }
 
-+ (void)_getVideo:(ForgeTask*)task {
++ (void)_getVideos:(ForgeTask*)task {
+    int selectionLimit = task.params[@"selectionLimit"] ? [task.params[@"selectionLimit"] intValue] : 1;
+    
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
-        configuration.selectionLimit = 1;
+        configuration.selectionLimit = selectionLimit;
         configuration.filter = [PHPickerFilter anyFilterMatchingSubfilters:@[
             PHPickerFilter.videosFilter,
             // TODO PHPickerFilter.livePhotosFilter
@@ -259,7 +263,7 @@
 
 #pragma mark permissions
 
-+ (void)permissions_check:(ForgeTask*)task permission:(NSString *)permission {
+/*+ (void)permissions_check:(ForgeTask*)task permission:(NSString *)permission {
     JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
     JLAuthorizationStatus status = [jlpermission authorizationStatus];
     [task success:[NSNumber numberWithBool:status == JLPermissionAuthorized]];
@@ -288,6 +292,6 @@
         }
         [task success:[NSNumber numberWithBool:granted]];
     }];
-}
+}*/
 
 @end
