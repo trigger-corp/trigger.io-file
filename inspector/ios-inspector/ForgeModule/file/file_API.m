@@ -39,15 +39,27 @@
 + (void)getVideos:(ForgeTask*)task {
     // TODO we need Photo Library permissions if we want to transcode video
     if (task.params[@"videoQuality"] && ![task.params[@"videoQuality"] isEqualToString:@"default"]) {
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-            if (status != PHAuthorizationStatusAuthorized) {
-                [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
-                return;
-            }
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [file_API _getVideos:task];
-            });
-        }];
+        if (@available(iOS 14, *)) {
+            [PHPhotoLibrary requestAuthorizationForAccessLevel:PHAccessLevelReadWrite handler:^(PHAuthorizationStatus status) {
+                if (status != PHAuthorizationStatusAuthorized) {
+                    [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+                    return;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [file_API _getVideos:task];
+                });
+            }];
+        } else {
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                if (status != PHAuthorizationStatusAuthorized) {
+                    [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+                    return;
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [file_API _getVideos:task];
+                });
+            }];
+        }
     } else {
         [file_API _getVideos:task];
     }
@@ -257,39 +269,5 @@
     }
     [task success:sizeInformation];
 }
-
-
-#pragma mark permissions
-
-/*+ (void)permissions_check:(ForgeTask*)task permission:(NSString *)permission {
-    JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
-    JLAuthorizationStatus status = [jlpermission authorizationStatus];
-    [task success:[NSNumber numberWithBool:status == JLPermissionAuthorized]];
-}
-
-+ (void)permissions_request:(ForgeTask*)task permission:(NSString *)permission {
-    JLPermissionsCore* jlpermission = [JLPhotosPermission sharedInstance];
-    if ([jlpermission authorizationStatus] == JLPermissionAuthorized) {
-        [task success:[NSNumber numberWithBool:YES]];
-        return;
-    }
-
-    NSDictionary* params = task.params;
-    NSString* rationale = [params objectForKey:@"rationale"];
-    if (rationale != nil) {
-        [jlpermission setRationale:rationale];
-    }
-
-    [jlpermission authorize:^(BOOL granted, NSError * _Nullable error) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-        [jlpermission setRationale:nil]; // force reset rationale
-#pragma clang diagnostic pop
-        if (error) {
-            [ForgeLog d:[NSString stringWithFormat:@"permissions.check '%@' failed with error: %@", permission, error]];
-        }
-        [task success:[NSNumber numberWithBool:granted]];
-    }];
-}*/
 
 @end
