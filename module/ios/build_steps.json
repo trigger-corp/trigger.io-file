@@ -6,9 +6,5 @@
     { "do": { "set_in_info_plist": {
         "key": "NSPhotoLibraryUsageDescription",
         "value": "{{modules.file.config.usage_description}}"
-    } } },
-    { "do": { "set_in_info_plist": {
-        "key": "NSPhotoLibraryAddUsageDescription",
-        "value": "{{modules.file.config.usage_description}}"
     } } }
 ]
