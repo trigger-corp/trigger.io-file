@@ -48,7 +48,7 @@ public class API {
         ForgeIntentResultHandler resultHandler = new ForgeIntentResultHandler() {
             @Override
             public void result(int requestCode, int resultCode, Intent data) {
-                if (resultCode == RESULT_OK) {
+                if (resultCode == RESULT_OK && data != null) {
                     Storage.IOFunction<Uri, ForgeFile> write = (Uri source) -> {
                         ForgeFile forgeFile = null;
                         if (type.startsWith("image/") && (maxWidth > 0 || maxHeight > 0)) {
@@ -63,7 +63,7 @@ public class API {
 
                     try {
                         ArrayList<ForgeFile> forgeFiles = new ArrayList<>();
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN && data.getClipData() != null) {
                             int itemCount = data.getClipData().getItemCount();
                             for (int index = 0; index < itemCount; index++) {
                                 Uri uri = data.getClipData().getItemAt(index).getUri();
@@ -71,8 +71,10 @@ public class API {
                                 ForgeFile forgeFile = write.apply(uri);
                                 forgeFiles.add(forgeFile);
                             }
-                        } else {
+
+                        } else if (data.getData() != null) {
                             Uri uri = data.getData();
+                            ForgeLog.d("Device does not support intent.getClipData(). Falling back to: " + uri.toString());
                             ForgeFile forgeFile = write.apply(uri);
                             forgeFiles.add(forgeFile);
                         }

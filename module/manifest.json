@@ -1,8 +1,8 @@
 {
-    "changes": "* Multi-selection support for images and videos\n* Support for the new iOS PHPicker media picker control\n* iOS 14 support\n* Android 30 support\n* Deprecated method `file.URL` in favour of `file.getScriptURL`\n* Deprecated method `file.getLocal` in favour of `file.getFileFromSourceDirectory`\n* Deprecated method `file.isFile` in favour of `file.exists`\n* Deprecated method `file.getStorageInformation` in favour of `file.getStorageSizeInformation`",
+    "changes": "* Fix crash in forge.file.getImages() when selecting an image on Samsung Galaxy S10 devices",
     "description": "Access local files, download remote files and import files from the gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and import images from the gallery.",
     "min_platform_version": "v2.9.0",
     "namespace": "file",
     "platform_version": "v2.9.0",
-    "version": "2.25"
+    "version": "2.26"
 }
