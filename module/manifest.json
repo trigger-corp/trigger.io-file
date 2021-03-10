@@ -1,8 +1,8 @@
 {
-    "changes": "* Fix crash in forge.file.getImages() when selecting an image on Samsung Galaxy S10 devices",
+    "changes": "* Fixed: Error when selecting mp4 videos on iOS 14.1 or higher.",
     "description": "Access local files, download remote files and import files from the gallery.\n\nThe file module allows your app to access files via the local filesystem, cache or persistently download remote files and import images from the gallery.",
     "min_platform_version": "v2.9.0",
     "namespace": "file",
     "platform_version": "v2.9.0",
-    "version": "2.26"
+    "version": "2.27"
 }

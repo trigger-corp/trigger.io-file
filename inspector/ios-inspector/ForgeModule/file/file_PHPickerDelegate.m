@@ -71,7 +71,7 @@
             if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeImage.identifier]) {
                 file = [self saveImageForResultSync:result maxWidth:width maxHeight:height error:&error];
                 
-            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeQuickTimeMovie.identifier]) {
+            } else if ([result.itemProvider hasItemConformingToTypeIdentifier:UTTypeMovie.identifier]) {
                 if (![videoQuality isEqualToString:@"default"]) {
                     // TODO until Apple allow us to transcode PHPicker results directly
                     NSString *assetIdentifier = result.assetIdentifier;
@@ -97,7 +97,7 @@
                 [files addObject:file];
             }
         }];
-
+        
         if (exitEarly) {
             // TODO result was handled by [file_Storage transcode]
         } else if (error != nil) {
@@ -159,7 +159,7 @@
         
         // TODO handle live photos
 
-        [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeQuickTimeMovie.identifier completionHandler:^(NSURL* _Nullable url, NSError * _Nullable error) {
+        [result.itemProvider loadFileRepresentationForTypeIdentifier:UTTypeMovie.identifier completionHandler:^(NSURL* _Nullable url, NSError * _Nullable error) {
             if (error != nil) {
                 error_ret = error;
 
