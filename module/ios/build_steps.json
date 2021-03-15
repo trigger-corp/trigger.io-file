@@ -3,6 +3,7 @@
     { "do": { "add_ios_system_framework": "UniformTypeIdentifiers.framework" } },
     { "do": { "add_ios_system_framework": "Photos.framework" } },
     { "do": { "add_ios_system_framework": "PhotosUI.framework" } },
+    { "do": { "add_ios_system_framework": "AVFoundation.framework" } },
     { "do": { "set_in_info_plist": {
         "key": "NSPhotoLibraryUsageDescription",
         "value": "{{modules.file.config.usage_description}}"
