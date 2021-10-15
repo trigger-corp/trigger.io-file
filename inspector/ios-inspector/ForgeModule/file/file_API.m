@@ -21,7 +21,7 @@
 
 + (void)getImages:(ForgeTask*)task {
     int selectionLimit = task.params[@"selectionLimit"] ? [task.params[@"selectionLimit"] intValue] : 1;
-    
+
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = selectionLimit;
@@ -29,9 +29,17 @@
         configuration.preferredAssetRepresentationMode = PHPickerConfigurationAssetRepresentationModeCompatible;
         file_PHPickerDelegate *delegate = [file_PHPickerDelegate withTask:task configuration:configuration];
         [delegate openPicker];
+
     } else {
-        file_Delegate_deprecated *delegate = [file_Delegate_deprecated withTask:task type:(NSString*)kUTTypeImage];
-        [delegate openPicker];
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            if (status != PHAuthorizationStatusAuthorized) {
+                [task error:@"Permission denied. User didn't grant access to storage." type:@"EXPECTED_FAILURE" subtype:nil];
+                return;
+            }
+
+            file_Delegate_deprecated *delegate = [file_Delegate_deprecated withTask:task type:(NSString*)kUTTypeImage];
+            [delegate openPicker];
+        }];
     }
 }
 
@@ -67,7 +75,7 @@
 
 + (void)_getVideos:(ForgeTask*)task {
     int selectionLimit = task.params[@"selectionLimit"] ? [task.params[@"selectionLimit"] intValue] : 1;
-    
+
     if (@available(iOS 14, *)) {
         PHPickerConfiguration *configuration = [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
         configuration.selectionLimit = selectionLimit;
@@ -98,7 +106,7 @@
 + (void)getURLFromSourceDirectory:(ForgeTask*)task resource:(NSString*)resource {
     if ([resource hasPrefix:@"http://"] || [resource hasPrefix:@"https://"]) {
         [task success:resource];
-        
+
     } else {
         ForgeFile *file = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Source resource:resource];
         [task success:[ForgeStorage scriptURL:file].absoluteString];
@@ -115,7 +123,7 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [task success:[ForgeStorage scriptPath:forgeFile]];
 }
 
@@ -126,7 +134,7 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [task success:[ForgeStorage scriptURL:forgeFile].absoluteString];
 }
 
@@ -137,7 +145,7 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [forgeFile exists:^(BOOL exists) {
         [task success:[NSNumber numberWithBool:exists]];
     }];
@@ -165,7 +173,7 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [forgeFile contents:^(NSData *data) {
         [task success:[data base64EncodingWithLineLength:0]];
     } errorBlock:^(NSError *error) {
@@ -180,7 +188,7 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [forgeFile contents:^(NSData *data) {
         [task success:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
     } errorBlock:^(NSError *error) {
@@ -195,12 +203,12 @@
     if (error != nil) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
     }
-    
+
     [forgeFile remove:^{
         [task success:nil];
     } errorBlock:^(NSError *error) {
         return [task error:error.localizedDescription type:@"EXPECTED_FAILURE" subtype:nil];
-    }];    
+    }];
 }
 
 
@@ -208,11 +216,11 @@
 
 + (void)cacheURL:(ForgeTask*)task url:(NSString*)url {
     NSURL *source = [NSURL URLWithString:url];
-    
+
     NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
     ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Temporary
                                             resource:filename];
-    
+
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -234,7 +242,7 @@
     NSString *filename = [ForgeStorage temporaryFileNameWithExtension:source.lastPathComponent];
     ForgeFile *forgeFile = [ForgeFile withEndpointId:ForgeStorage.EndpointIds.Permanent
                                             resource:filename];
-    
+
     NSURL *destination = [ForgeStorage nativeURL:forgeFile];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
